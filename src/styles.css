@@ -1,0 +1,12 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
