@@ -170,7 +170,18 @@
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const communityContext = locComments.map(c => `Puan: ${c.rating}/5, Yorum: "${c.text}"`).join(" | ");
         
-        const prompt = `Sen İYTE kampüsü erişilebilirlik asistanısın. Kullanıcı: ${state.userName}. Konum: ${locInfo.title}. Geçmiş Yorumlar: ${communityContext || 'Yok'}. Fotoğrafı analiz et. Görselde rampa/yol mu var yoksa bir insan/eşya mı? İnsan/eşya ise uyar. Rampaysa eğimini ve geçmiş yorumları hesaba katarak tavsiye ver.`;
+        const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın, üniversite öğrencilerinin (özellikle tekerlekli sandalye kullanan veya hareket kısıtlılığı olan bireylerin) kampüs içindeki fiziksel engelleri aşmalarına yardımcı olmaktır. Cevapların empatik, net ve doğrudan çözüm odaklı olmalıdır.
+
+KULLANICI DURUMU:
+- Kullanıcı Adı: ${state.userName}
+- Bulunduğu Konum: ${locInfo.title}
+- Bu Konumla İlgili Önceki Topluluk Yorumları: ${communityContext || 'Henüz yorum yok.'}
+
+GÖREV: Ekli fotoğrafı detaylıca analiz et ve aşağıdaki 3 başlıklı formatta (kısa ve öz) yanıt ver:
+
+1. GÖRSEL ANALİZİ: (Fotoğrafta ne görüyorsun? Bu bir yol/rampa mı yoksa ilgisiz bir obje/insan mı? İlgisizse sadece uyarı ver ve bitir).
+2. ERİŞİLEBİLİRLİK DURUMU: (Eğer bu bir yolsa/rampaysa eğimi nasıl? Tekerlekli sandalye ile tek başına çıkılabilir mi?)
+3. UZMAN TAVSİYESİ: (Önceki topluluk yorumlarını da dikkate alarak kullanıcıya ne tavsiye edersin? Yanında biri olmalı mı, yoksa alternatif bir yol mu aramalı?)`;
 
         try {
             const base64Data = state.imageSource.split(',')[1];
