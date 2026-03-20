@@ -28,7 +28,6 @@
         { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
-    // Senin için hazırladığım bot yorumları
     const STATIC_COMMENTS = [
         { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Bölümün önündeki yokuş gerçekten çok dik. Tek başıma çıkmam mümkün olmadı.", date: "15 Mar 2026" },
         { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kütüphaneye giriş çok rahat, asansörler ve rampalar standartlara uygun.", date: "16 Mar 2026" },
@@ -41,18 +40,39 @@
         tab: "giris", userName: STORED_USER_NAME, userProfile: STORED_USER_PROFILE,
         selectedLoc: "", imageSource: null, cameraActive: false, geminiLoading: false, 
         geminiResult: "", showModal: false, customQuestion: "", fullscreenImgSrc: null,
-        comments: [...STATIC_COMMENTS], // Başta botlar hazır olsun
+        comments: [...STATIC_COMMENTS],
         newCommentPhoto: null, newCommentText: "", newCommentRating: 0
     };
 
     const app = document.getElementById("app");
 
-    // Canlı yorumları çek ve botlarla birleştir
     db.collection("comments").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
         const liveComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         state.comments = [...liveComments, ...STATIC_COMMENTS]; 
         if (state.tab === "topluluk") render(); 
-    });
+    }, (error) => console.error("Firestore Dinleme Hatası:", error));
+
+    // YENİ: Gelişmiş Fotoğraf Sıkıştırma (Mobil için hayat kurtarır)
+    function resizeImage(base64Str, maxWidth = 800) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7)); // %70 kalite, JPEG formatı (en hafifi)
+            };
+        });
+    }
 
     function getProfileBadge(profile) {
         const badges = {
@@ -170,9 +190,10 @@
         const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const context = locComments.map(c => `${c.profile}: ${c.text}`).join(" | ");
-        const prompt = `İYTE Erişilebilirlik Danışmanısın. Konum: ${locInfo.title}, Profil: ${state.userProfile}, Soru: ${state.customQuestion || 'Yok'}, Topluluk: ${context}. Fotoğrafı analiz et, madde işaretli ve nazikçe yanıtla.`;
+        const prompt = `SİSTEM MESAJI: Sen İYTE kampüsündeki öğrencilere rehberlik eden uzman bir 'Erişilebilirlik Danışmanı'sın. Konum: ${locInfo.title}, Profil: ${state.userProfile}, Özel Soru: ${state.customQuestion || 'Yok'}, Topluluk Deneyimleri: ${context}. Fotoğrafı analiz et, madde işaretli ve nazikçe yanıtla.`;
         try {
-            const base64Data = state.imageSource.split(',')[1];
+            const compressedImg = await resizeImage(state.imageSource, 1000); // AI için 1000px yeterli
+            const base64Data = compressedImg.split(',')[1];
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Data } }] }] })
@@ -186,16 +207,36 @@
         state.geminiLoading = false; render();
     }
 
-    function addNewComment() {
+    async function addNewComment() {
         const locId = document.getElementById("newLocSelect").value;
         const text = state.newCommentText.trim();
         const rating = state.newCommentRating;
         const photo = state.newCommentPhoto;
+        
         if (!locId || !text || rating === 0) return alert("Eksik bilgi!");
+        
+        // YENİ: Fotoğrafı kaydetmeden önce küçültüyoruz
+        let finalPhoto = "";
+        if (photo) {
+            finalPhoto = await resizeImage(photo, 600); // 600px genişlik Firebase için idealdir
+        }
+
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
-        db.collection("comments").add({ locId: locId, user: state.userName, profile: state.userProfile, photo: photo || "", rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
-        .then(() => { state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); });
+        
+        db.collection("comments").add({ 
+            locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, 
+            rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+        })
+        .then(() => { 
+            state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; 
+            alert("Yorumun kaydedildi!"); 
+            render(); 
+        })
+        .catch((error) => {
+            alert("⚠️ Kayıt Hatası: " + error.message);
+            console.error(error);
+        });
     }
 
     app.addEventListener("click", e => {
