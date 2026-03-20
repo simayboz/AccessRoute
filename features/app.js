@@ -9,37 +9,32 @@
         appId: "1:369877736663:web:34f28c80313bb3f71b6492"
     };
     
-    // Veritabanını Başlat
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     // --- 2. UYGULAMA DEĞİŞKENLERİ ---
     let GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
+    let STORED_USER_NAME = localStorage.getItem("userName") || "";
+    let STORED_USER_PROFILE = localStorage.getItem("userProfile") || "Belirtilmedi";
     
+    // YENİ: Fen Fakültesi ve Mimarlık Fakültesi eklendi!
     const IYTE_LOCATIONS = [
-        { id: "lib", title: "Kütüphane Rampası" },
-        { id: "cafe", title: "Yemekhane Girişi" },
-        { id: "chem", title: "Kimya Müh. Yokuşu" },
-        { id: "kyk_kiz", title: "KYK Kız Yurdu" },
-        { id: "kyk_erkek", title: "KYK Erkek Yurdu" },
-        { id: "hazirlik", title: "Hazırlık Binası" },
-        { id: "opera_kafe", title: "Opera Kafe" },
-        { id: "koy_yokusu", title: "Köy Yokuşu" },
-        { id: "muh_bilgisayar", title: "Bilgisayar Mühendisliği" },
-        { id: "muh_biyomuhendislik", title: "Biyomühendislik" },
-        { id: "muh_cevre", title: "Çevre Mühendisliği" },
-        { id: "muh_enerji", title: "Enerji Sistemleri Mühendisliği" },
-        { id: "muh_elektronik", title: "Elektronik ve Haberleşme Mühendisliği" },
-        { id: "muh_gida", title: "Gıda Mühendisliği" },
-        { id: "muh_insaat", title: "İnşaat Mühendisliği" },
-        { id: "muh_kimya", title: "Kimya Mühendisliği" },
-        { id: "muh_makine", title: "Makine Mühendisliği" },
-        { id: "muh_malzeme", title: "Malzeme Bilimi ve Mühendisliği" }
+        { id: "lib", title: "Kütüphane Rampası" }, { id: "cafe", title: "Yemekhane Girişi" },
+        { id: "chem", title: "Kimya Müh. Yokuşu" }, { id: "kyk_kiz", title: "KYK Kız Yurdu" },
+        { id: "kyk_erkek", title: "KYK Erkek Yurdu" }, { id: "hazirlik", title: "Hazırlık Binası" },
+        { id: "opera_kafe", title: "Opera Kafe" }, { id: "koy_yokusu", title: "Köy Yokuşu" },
+        { id: "muh_bilgisayar", title: "Bilgisayar Mühendisliği" }, { id: "muh_biyomuhendislik", title: "Biyomühendislik" },
+        { id: "muh_cevre", title: "Çevre Mühendisliği" }, { id: "muh_enerji", title: "Enerji Sistemleri Mühendisliği" },
+        { id: "muh_elektronik", title: "Elektronik ve Haberleşme Mühendisliği" }, { id: "muh_gida", title: "Gıda Mühendisliği" },
+        { id: "muh_insaat", title: "İnşaat Mühendisliği" }, { id: "muh_kimya", title: "Kimya Mühendisliği" },
+        { id: "muh_makine", title: "Makine Mühendisliği" }, { id: "muh_malzeme", title: "Malzeme Bilimi ve Mühendisliği" },
+        { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
     const state = {
-        tab: "giris", userName: "", selectedLoc: "", imageSource: null,
-        cameraActive: false, geminiLoading: false, geminiResult: "", showModal: false,
+        tab: "giris", userName: STORED_USER_NAME, userProfile: STORED_USER_PROFILE,
+        selectedLoc: "", imageSource: null, cameraActive: false, geminiLoading: false, 
+        geminiResult: "", showModal: false, customQuestion: "", fullscreenImgSrc: null,
         comments: [], newCommentPhoto: null, newCommentText: "", newCommentRating: 0
     };
 
@@ -54,39 +49,47 @@
     // --- ARAYÜZ (HTML) FONKSİYONLARI ---
     function renderGiris() {
         return `
-            <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center -mt-10">
+            <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center -mt-10 px-6">
                 <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="h-24 w-24 mb-4 opacity-90">
                 <div class="iyte-red p-5 rounded-3xl shadow-2xl w-full max-w-xs">
                     <h1 class="text-3xl font-black italic text-white">AccessRoute</h1>
                     <p class="text-sm text-red-100 mt-1">İYTE Engelsiz Kampüs Asistanı</p>
                 </div>
-                <div class="w-full max-w-xs space-y-4">
-                    <input type="text" id="userNameInput" placeholder="Adınız Soyadınız" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-lg outline-none focus:border-red-500">
-                    ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (Zorunlu)" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-sm outline-none focus:border-red-500 text-emerald-400">` : `<div class="space-y-2"><p class="text-xs text-emerald-500 font-bold">✅ API Anahtarı Cihazda Kayıtlı</p><button data-action="reset-key" class="text-[10px] text-rose-400 underline">Anahtarı Sıfırla</button></div>`}
-                    <button data-action="submit-login" class="w-full iyte-red py-4 rounded-xl font-black text-white shadow-lg active:scale-95 transition-transform text-lg mt-2">Uygulamaya Başla</button>
+                <div class="w-full max-w-xs space-y-3">
+                    <input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-lg outline-none focus:border-red-500">
+                    
+                    <select id="userProfileInput" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-sm outline-none focus:border-red-500 [&>option]:bg-slate-900">
+                        <option value="Belirtilmedi" ${state.userProfile === 'Belirtilmedi' ? 'selected' : ''}>Hareketlilik Tercihi (İsteğe Bağlı)</option>
+                        <option value="Manuel Tekerlekli Sandalye" ${state.userProfile === 'Manuel Tekerlekli Sandalye' ? 'selected' : ''}>Manuel Tekerlekli Sandalye</option>
+                        <option value="Akülü Tekerlekli Sandalye" ${state.userProfile === 'Akülü Tekerlekli Sandalye' ? 'selected' : ''}>Akülü Tekerlekli Sandalye</option>
+                        <option value="Koltuk Değneği veya Yürüteç" ${state.userProfile === 'Koltuk Değneği veya Yürüteç' ? 'selected' : ''}>Koltuk Değneği / Yürüteç</option>
+                        <option value="Beyaz Baston (Görme Desteği)" ${state.userProfile === 'Beyaz Baston (Görme Desteği)' ? 'selected' : ''}>Beyaz Baston / Görme Desteği</option>
+                        <option value="Fiziksel Destek İhtiyacı Yok" ${state.userProfile === 'Fiziksel Destek İhtiyacı Yok' ? 'selected' : ''}>Fiziksel Destek İhtiyacım Yok</option>
+                    </select>
+
+                    ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (Zorunlu)" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-sm outline-none focus:border-red-500 text-emerald-400">` : `<div class="space-y-2 pt-2"><p class="text-xs text-emerald-500 font-bold">✅ API Anahtarı Kayıtlı</p><button data-action="reset-key" class="text-[10px] text-rose-400 underline">Anahtarı Sıfırla</button></div>`}
+                    <button data-action="submit-login" class="w-full iyte-red py-4 rounded-xl font-black text-white shadow-lg active:scale-95 transition-transform text-lg mt-4">Uygulamaya Başla</button>
                 </div>
             </div>`;
     }
 
     function renderAnaliz() {
         const imgClass = state.imageSource ? "w-full h-full object-cover cursor-pointer" : "";
-        const imgOnClick = state.imageSource ? `onclick="openFullscreen('${state.imageSource}')"` : "";
-
         return `
-            <div class="space-y-4">
+            <div class="space-y-4 px-1">
                 <div class="iyte-red rounded-3xl p-6 shadow-xl flex justify-between items-center">
-                    <div><h1 class="text-2xl font-black italic">ANALİZ</h1><p class="text-xs opacity-80">Hoş geldin, <span class="font-bold">${state.userName}</span></p></div>
+                    <div><h1 class="text-2xl font-black italic">ANALİZ</h1><p class="text-[10px] opacity-80 mt-1">Hoş geldin, <span class="font-bold">${state.userName}</span><br><span class="text-amber-300">${state.userProfile !== "Belirtilmedi" ? state.userProfile : ""}</span></p></div>
                     <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="h-12 w-12 opacity-80">
                 </div>
                 <div class="glass rounded-2xl p-4">
-                    <select id="locSelect" class="w-full bg-transparent border-b border-slate-600 py-2 text-sm outline-none text-slate-100 focus:border-red-500">
-                        <option value="" class="bg-slate-900">Haritadan Konum Seç...</option>
-                        ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" class="bg-slate-900" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
+                    <select id="locSelect" class="w-full bg-transparent border-b border-slate-600 py-2 text-sm outline-none text-slate-100 focus:border-red-500 [&>option]:bg-slate-900">
+                        <option value="">Haritadan Konum Seç...</option>
+                        ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
                     </select>
                 </div>
-                <div class="camera-box shadow-2xl">
+                <div class="camera-box shadow-2xl relative">
                     ${state.cameraActive ? '<video id="cameraVideo" autoplay playsinline muted></video>' : 
-                     (state.imageSource ? `<img src="${state.imageSource}" class="${imgClass}" ${imgOnClick} alt="Analiz Görüntüsü">` : 
+                     (state.imageSource ? `<img src="${state.imageSource}" class="${imgClass}" data-action="open-fullscreen" data-src="${state.imageSource}" alt="Analiz Görüntüsü">` : 
                      '<div class="flex items-center justify-center h-full text-slate-500 text-sm italic">Fotoğraf Çekin...</div>')}
                     ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-red-600 p-4 rounded-full text-2xl shadow-lg">📸</button>' : ''}
                 </div>
@@ -94,18 +97,21 @@
                     <button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-xl py-4 text-xs font-bold uppercase ${state.cameraActive?'text-rose-400':'text-emerald-400'}">${state.cameraActive?'Kapat':'Kamerayı Aç'}</button>
                     <label class="glass rounded-xl py-4 text-xs font-bold uppercase text-sky-400 flex items-center justify-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
                 </div>
-                <button data-action="run-ai" class="w-full iyte-red py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95">✨ YAPAY ZEKA İLE ANALİZ ET</button>
+                
+                <input type="text" id="customQuestionInput" value="${state.customQuestion}" placeholder="Yapay zekaya özel bir sorun var mı? (İsteğe bağlı)" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-sm outline-none text-slate-200 focus:border-amber-500 transition-colors">
+                
+                <button data-action="run-ai" class="w-full iyte-red py-5 rounded-2xl font-black text-lg shadow-lg active:scale-95">✨ AI İLE ANALİZ ET</button>
             </div>`;
     }
 
     function renderTopluluk() {
         const addPhotoBtnClass = state.newCommentPhoto ? "border-emerald-500" : "border-slate-600";
         return `
-            <div class="space-y-6 pt-2">
+            <div class="space-y-6 pt-2 px-1">
                 <h2 class="text-xl font-bold border-b border-red-600 pb-2 inline-block">Topluluk Notları</h2>
                 
                 <div class="glass rounded-2xl p-5 space-y-4">
-                    <div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded-full iyte-red flex items-center justify-center font-bold text-xs">${state.userName.substring(0,2).toUpperCase()}</div><span class="text-sm font-bold">${state.userName} olarak yorum yap</span></div>
+                    <div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded-full iyte-red flex items-center justify-center font-bold text-xs">${state.userName.substring(0,2).toUpperCase()}</div><span class="text-sm font-bold">${state.userName}</span></div>
                     <select id="newLocSelect" class="w-full bg-slate-800 rounded-xl p-3 text-sm text-slate-200"><option value="">Konum Seç...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}</select>
                     <div class="flex gap-3 items-center">
                         <label class="border-2 border-dashed ${addPhotoBtnClass} rounded-xl w-24 h-24 flex flex-col items-center justify-center cursor-pointer text-slate-500 hover:text-slate-300 flex-shrink-0 overflow-hidden">${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover">` : '<span class="text-3xl">+</span><span class="text-[10px] mt-1">Fotoğraf</span>'}<input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput"></label>
@@ -113,11 +119,7 @@
                     </div>
                     <div class="flex items-center justify-between gap-2 bg-slate-900/50 p-3 rounded-xl">
                         <div class="star-rating">
-                            <input type="radio" id="star5" name="rating" value="5" /><label for="star5">★</label>
-                            <input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label>
-                            <input type="radio" id="star3" name="rating" value="3" /><label for="star3">★</label>
-                            <input type="radio" id="star2" name="rating" value="2" /><label for="star2">★</label>
-                            <input type="radio" id="star1" name="rating" value="1" /><label for="star1">★</label>
+                            <input type="radio" id="star5" name="rating" value="5" /><label for="star5">★</label><input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label><input type="radio" id="star3" name="rating" value="3" /><label for="star3">★</label><input type="radio" id="star2" name="rating" value="2" /><label for="star2">★</label><input type="radio" id="star1" name="rating" value="1" /><label for="star1">★</label>
                         </div>
                         <button data-action="add-new-comment" class="iyte-red px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95">Paylaş</button>
                     </div>
@@ -131,7 +133,7 @@
                         <h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>
                         ${locComments.map(c => `
                             <div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md">
-                                <img src="${c.photo}" class="comment-photo border border-white/10" onclick="openFullscreen('${c.photo}')" alt="Kullanıcı Fotoğrafı">
+                                <img src="${c.photo}" class="comment-photo border border-white/10 cursor-pointer hover:opacity-80 transition-opacity" data-action="open-fullscreen" data-src="${c.photo}" alt="Kullanıcı Fotoğrafı">
                                 <div class="flex-1 space-y-1">
                                     <div class="flex justify-between items-center">
                                         <span class="font-bold text-sm text-slate-100">@${c.user}</span>
@@ -153,7 +155,17 @@
 
     function renderModal() {
         if (!state.showModal) return "";
-        return `<div class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/95 backdrop-blur-md"><div class="bg-white text-slate-900 rounded-[32px] p-8 w-full shadow-2xl border-t-8 border-red-600"><h3 class="font-black italic text-red-700 text-xl mb-4 uppercase">🤖 AI Kararı</h3>${state.geminiLoading ? '<div class="flex flex-col items-center justify-center py-8 space-y-4"><div class="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div><p class="text-sm font-bold text-slate-500 animate-pulse">Analiz Ediliyor...</p></div>' : `<div class="text-sm leading-relaxed mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 max-h-60 overflow-y-auto">${state.geminiResult}</div>`}${!state.geminiLoading ? `<div class="space-y-3 mt-2"><button data-action="go-to-comments" class="w-full py-4 iyte-red text-white rounded-xl font-bold text-xs uppercase shadow-md">Bu Konuma Yorum Yap</button><button data-action="close-modal" class="w-full py-3 text-slate-500 text-xs font-bold uppercase">Kapat</button></div>` : ''}</div></div>`;
+        return `<div class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/95 backdrop-blur-md"><div class="bg-white text-slate-900 rounded-[32px] p-8 w-full shadow-2xl border-t-8 border-red-600 flex flex-col max-h-[90vh]"><h3 class="font-black italic text-red-700 text-xl mb-4 uppercase shrink-0">🤖 AI Kararı</h3>${state.geminiLoading ? '<div class="flex flex-col items-center justify-center py-8 space-y-4"><div class="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div><p class="text-sm font-bold text-slate-500 animate-pulse">Analiz Ediliyor...</p></div>' : `<div class="text-sm leading-relaxed mb-6 bg-slate-50 p-5 rounded-2xl border border-slate-200 overflow-y-auto flex-1">${state.geminiResult}</div>`}${!state.geminiLoading ? `<div class="space-y-3 mt-2 shrink-0"><button data-action="go-to-comments" class="w-full py-4 iyte-red text-white rounded-xl font-bold text-xs uppercase shadow-md">Bu Konuma Yorum Yap</button><button data-action="close-modal" class="w-full py-3 text-slate-500 text-xs font-bold uppercase">Kapat</button></div>` : ''}</div></div>`;
+    }
+
+    function renderFullscreenImage() {
+        if (!state.fullscreenImgSrc) return "";
+        return `
+            <div class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 cursor-pointer" data-action="close-fullscreen">
+                <button data-action="close-fullscreen" class="absolute top-6 right-6 text-white text-4xl font-black drop-shadow-lg opacity-80 hover:opacity-100">&times;</button>
+                <img src="${state.fullscreenImgSrc}" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl" onclick="event.stopPropagation()">
+            </div>
+        `;
     }
 
     function renderTabBar() {
@@ -164,7 +176,7 @@
 
     function render() {
         let content = state.tab === "giris" ? renderGiris() : (state.tab === "analiz" ? renderAnaliz() : renderTopluluk());
-        app.innerHTML = content + renderModal() + renderTabBar();
+        app.innerHTML = content + renderModal() + renderFullscreenImage() + renderTabBar();
         if (state.cameraActive && state.tab === "analiz") startVideo();
     }
 
@@ -185,12 +197,17 @@
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const communityContext = locComments.map(c => `Puan: ${c.rating}/5, Yorum: "${c.text}"`).join(" | ");
         
-        const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın, üniversite öğrencilerinin kampüs içindeki fiziksel engelleri aşmalarına yardımcı olmaktır. 
-KULLANICI DURUMU: Konum: ${locInfo.title}. Önceki Yorumlar: ${communityContext || 'Henüz yorum yok.'}
-GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
-1. GÖRSEL ANALİZİ: (Fotoğrafta ne görüyorsun?)
-2. ERİŞİLEBİLİRLİK DURUMU: (Eğimi nasıl? Tek başına çıkılabilir mi?)
-3. UZMAN TAVSİYESİ: (Önceki yorumları dikkate alarak ne tavsiye edersin?)`;
+        const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın İYTE kampüsündeki öğrencilere rehberlik etmektir. Cevaplarında nazik ve çözüm odaklı ol.
+KULLANICI DURUMU: 
+- Konum: ${locInfo.title}
+- Kullanıcının Hareketlilik Profili: ${state.userProfile}
+- Kullanıcının Özel Notu/Sorusu: ${state.customQuestion || 'Belirtilmedi.'}
+- Diğer Öğrencilerin Yorumları: ${communityContext || 'Henüz yorum yok.'}
+
+GÖREV: Ekli fotoğrafı analiz et ve aşağıdaki formata göre yanıt ver:
+1. GÖRSEL ANALİZİ: (Fotoğrafta ne var?)
+2. ERİŞİLEBİLİRLİK DURUMU: (Kullanıcının profilini (${state.userProfile}) dikkate alarak bu alanı tek başına kullanıp kullanamayacağını değerlendir.)
+3. UZMAN TAVSİYESİ VE CEVAP: (Varsa kullanıcının özel sorusunu cevapla ve önceki öğrenci yorumlarını hesaba katarak en güvenli tavsiyeyi ver.)`;
 
         try {
             const base64Data = state.imageSource.split(',')[1];
@@ -215,24 +232,12 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         const photo = state.newCommentPhoto;
         
         if (!locId || !text || !photo || rating === 0) return alert("Konum, fotoğraf, yorum ve yıldız puanı eksiksiz olmalı!");
-
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][now.getMonth()]} ${now.getFullYear()}`;
 
-        db.collection("comments").add({
-            locId: locId,
-            user: state.userName,
-            photo: photo,
-            rating: rating,
-            text: text,
-            date: formattedDate,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(() => {
-            state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0;
-            render();
-        }).catch((error) => {
-            alert("Yorum kaydedilemedi: " + error.message);
-        });
+        db.collection("comments").add({ locId: locId, user: state.userName, photo: photo, rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); })
+        .catch((error) => alert("Hata: " + error.message));
     }
 
     // --- EVENT DİNLEYİCİLERİ ---
@@ -244,11 +249,18 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = null; render(); return; }
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
+            const profile = document.getElementById("userProfileInput").value;
             const key = document.getElementById("apiKeyInput")?.value;
             if (name.length < 2) return alert("İsim giriniz");
+            
+            localStorage.setItem("userName", name);
+            localStorage.setItem("userProfile", profile);
+            state.userName = name;
+            state.userProfile = profile;
+
             if (key) { GEMINI_API_KEY = key; localStorage.setItem("gemini_api_key", key); }
             if (!GEMINI_API_KEY) return alert("Lütfen API Anahtarı girin!");
-            state.userName = name; state.tab = "analiz"; render();
+            state.tab = "analiz"; render();
         }
         if (act === "tab") { state.tab = btn.dataset.id; render(); }
         if (act === "open-camera") { state.cameraActive = true; render(); }
@@ -265,14 +277,9 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         if (act === "close-modal") { state.showModal = false; render(); }
         if (act === "go-to-comments") { state.showModal = false; state.tab = "topluluk"; render(); }
         if (act === "add-new-comment") addNewComment();
-        
-        // SİLME İŞLEMİ BURADA YAKALANIYOR
-        if (act === "delete-comment") {
-            const commentId = btn.dataset.id;
-            if (confirm("Yorumunu tamamen silmek istediğine emin misin?")) {
-                db.collection("comments").doc(commentId).delete().catch(err => alert("Silinemedi: " + err.message));
-            }
-        }
+        if (act === "delete-comment") { if (confirm("Silmek istediğine emin misin?")) db.collection("comments").doc(btn.dataset.id).delete(); }
+        if (act === "open-fullscreen") { state.fullscreenImgSrc = btn.dataset.src; render(); }
+        if (act === "close-fullscreen") { state.fullscreenImgSrc = null; render(); }
     });
 
     app.addEventListener("change", e => {
@@ -291,7 +298,10 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         }
     });
 
-    app.addEventListener("input", e => { if (e.target.id === "newCommentText") state.newCommentText = e.target.value; });
+    app.addEventListener("input", e => { 
+        if (e.target.id === "newCommentText") state.newCommentText = e.target.value; 
+        if (e.target.id === "customQuestionInput") state.customQuestion = e.target.value;
+    });
 
     render();
 })();
