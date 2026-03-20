@@ -1,69 +1,25 @@
-# AccessRoute - Tasks
+# ✅ AccessRoute Geliştirme Görev Listesi
 
-`prd.md` baz alinarak uygulamayi adim adim gelistirmek icin gorev listesi.
+## 🛠️ Faz 1: Altyapı ve Hazırlık
+- [ ] Görev 1: HTML iskeletini oluştur ve Tailwind CSS + Phosphor Icons kütüphanelerini bağla.
+- [ ] Görev 2: Firebase projesini oluştur ve Firestore veritabanı bağlantısını `app.js` içine kur.
+- [ ] Görev 3: Gemini 2.5 Flash API anahtarını güvenli kullanım için hazırla.
 
-## 1. Proje Kurulumu
-- [ ] Proje klasor yapisini olustur (`src`, `components`, `services`, `assets`).
-- [ ] HTML5 + Tailwind CSS + ES6 temel iskeletini kur.
-- [ ] Ortam degiskenlerini tanimla (`GEMINI_API_KEY`, veritabani anahtarlari).
-- [ ] Mobil tarayici/sensor uyumlulugunu netlestir.
+## 👤 Faz 2: Kullanıcı ve Profil Yönetimi
+- [ ] Görev 4: Kapsayıcı "Hareketlilik Profili" seçimini içeren Giriş Ekranını tasarla.
+- [ ] Görev 5: Kullanıcı bilgilerini LocalStorage ile tarayıcıya kaydetme mekanizmasını yaz.
 
-## 2. Temel Kullanici Akisi
-- [ ] Profil secimi ekranini gelistir (Bedensel / Gorme).
-- [ ] Akisi kur: Profil -> Olcum/Analiz -> Sonuc -> Harita.
-- [ ] Yukleniyor, hata ve izin reddi gibi durum ekranlarini ekle.
-- [ ] Erişilebilir UI ilkelerini uygula (kontrast, buyuk dokunma alanlari, sade dil).
+## 💬 Faz 3: Topluluk Hafızası (Firebase)
+- [ ] Görev 6: Firestore'dan anlık (real-time) yorum çekme ve listeleme fonksiyonunu yaz.
+- [ ] Görev 7: Yorum ekleme (fotoğraflı/fotoğrafsız) ve kendi yorumunu silme özelliklerini ekle.
+- [ ] Görev 8: Mobil uyumluluk için fotoğraf boyutlandırma (client-side resizing) fonksiyonunu yaz.
 
-## 3. Sensor Tabanli Rampa Analizi
-- [ ] Device Orientation API ile jiroskop ve ivmeolcer verisi topla.
-- [ ] Eğim hesaplama algoritmasini uygula.
-- [ ] Guvenli esik degerini profil bazli belirle (ornek: %8).
-- [ ] Esik asiminda sesli + gorsel risk uyarisi ver.
-- [ ] Eğim olcumlerinde ±1 derece dogruluk hedefini test et.
+## 🤖 Faz 4: Yapay Zeka ve Deneyim Sentezi
+- [ ] Görev 9: Kamera/Galeri erişimini kur ve çekilen fotoğrafı Gemini'ye gönderme sistemini yap.
+- [ ] Görev 10: "Deneyim Sentezi" mantığını kur: AI'ya hem fotoğrafı hem de topluluk yorumlarını analiz ettir.
+- [ ] Görev 11: AI sonuçlarını şık bir modal (pencere) içinde, madde işaretli formatta göster.
 
-## 4. Gemini Vision Engel Analizi
-- [ ] Kamera/fotograf yukleme ozelligini ekle.
-- [ ] Gemini 1.5 Flash API entegrasyonunu tamamla.
-- [ ] Prompt yapisini standardize et (engel turu, gecis durumu, risk).
-- [ ] Ciktiyi normalize et (`tur`, `durum`, `risk`, `aciklama`).
-- [ ] API hata durumlarini yonet (timeout, gecersiz gorsel, baglanti).
-
-## 5. Sesli Etkilesim (Voice-First)
-- [ ] TTS ile analiz sonuclarini sesli betimleme olarak oynat.
-- [ ] STT ile kullanicinin sesli engel raporu girmesini sagla.
-- [ ] Sesli girdiyi yapilandirilmis rapora donustur.
-- [ ] Gorme engelli kullanicilar icin minimum dokunusla akis tasarla.
-
-## 6. Canli Harita ve Topluluk Veri Paylasimi
-- [ ] Firebase veya Supabase secimini yap.
-- [ ] Engel veri modelini tanimla (`id`, `lat`, `lng`, `tur`, `risk`, `timestamp`).
-- [ ] Onayli engelleri veritabanina kaydet.
-- [ ] Gercek zamanli veri dinleme ile haritayi anlik guncelle.
-- [ ] Risk seviyesine gore harita ikon/renk standartlarini belirle.
-- [ ] Verinin 5 saniye icinde tum kullanicilara yayildigini dogrula.
-
-## 7. Birlesik Karar Mekanizmasi
-- [ ] Sensor ve Gemini sonucunu birlestiren karar motorunu yaz.
-- [ ] "Guvenli / Riskli / Gecilemez" siniflandirmasini netlestir.
-- [ ] Celiskili veriler icin fallback kurallari ekle.
-
-## 8. Guvenlik ve Gizlilik
-- [ ] Kamera, mikrofon, konum, hareket izin akislarini netlestir.
-- [ ] Gereksiz veri saklamamayi garanti eden veri minimizasyonunu uygula.
-- [ ] Kullanici bilgilendirme ve acik onam metinlerini ekle.
-- [ ] API anahtari guvenligi icin uygun mimariyi uygula.
-
-## 9. Test ve Basari Kriterleri
-- [ ] Birim testler: egim hesaplama, risk siniflandirma, veri donusumu.
-- [ ] Entegrasyon testleri: sensor -> AI -> DB -> harita akisi.
-- [ ] Erişilebilirlik testleri: ekran okuyucu, kontrast, klavye kullanimi.
-- [ ] KPI dogrulamalari:
-  - [ ] Eğim olcum hatasi ±1 derece.
-  - [ ] Engel tanima/risk dogrulugu %90+.
-  - [ ] Harita yayilim suresi <= 5 saniye.
-
-## 10. Yayin ve Sonrasi
-- [ ] GitHub Pages uzerinden yayin altyapisini hazirla.
-- [ ] Staging ve uretim cikis kontrol listesi olustur.
-- [ ] Pilot kullanici testi yap ve geri bildirim topla.
-- [ ] Post-MVP iyilestirmeleri planla (rota optimizasyonu, guven skoru, offline mod).
+## 💅 Faz 5: Premium Tasarım ve Lansman
+- [ ] Görev 12: Glassmorphism (Buzlu cam) efektlerini ve sayfa geçiş animasyonlarını uygula.
+- [ ] Görev 13: Mobil cihazlarda "Lacivert Ekran" hatalarını önlemek için cache temizleme hilesini (v=2) ekle.
+- [ ] Görev 14: GitHub Pages üzerinden projeyi canlıya al ve test et.
