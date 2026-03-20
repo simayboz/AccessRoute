@@ -28,12 +28,18 @@
         { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
+    // Yeni ve daha kapsamlı bot yorumları
     const STATIC_COMMENTS = [
         { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Bölümün önündeki yokuş gerçekten çok dik. Tek başıma çıkmam mümkün olmadı.", date: "15 Mar 2026" },
         { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kütüphaneye giriş çok rahat, asansörler ve rampalar standartlara uygun.", date: "16 Mar 2026" },
         { locId: "cafe", user: "Melis", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 4, text: "Yemekhane girişi geniş ama kapılar biraz ağır, destek gerekebiliyor.", date: "17 Mar 2026" },
         { locId: "fak_fen", user: "Arda", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 3, text: "Hissedilebilir yüzeyler bazı noktalarda kesiliyor, yenilenmesi iyi olur.", date: "18 Mar 2026" },
-        { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Mimarlık fakültesi girişindeki rampayı test ettim, gayet güvenli duruyor.", date: "19 Mar 2026" }
+        { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Mimarlık fakültesi girişindeki rampayı test ettim, gayet güvenli duruyor.", date: "19 Mar 2026" },
+        { locId: "muh_bilgisayar", user: "Berk", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Giriş rampası çok iyi ama laboratuvarlardaki masalar sandalye için biraz yüksek kalabiliyor.", date: "20 Mar 2026" },
+        { id: "opera_kafe", user: "Melih", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 3, text: "Bahçedeki taşlı zemin koltuk değneğiyle yürürken sarsıyor, düzeltilse süper olur.", date: "21 Mar 2026" },
+        { id: "hazirlik", user: "Kerem", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 5, text: "Sesli navigasyon desteği binalar arasında çok iyi çalışıyor, yönümü kolay buldum.", date: "21 Mar 2026" },
+        { id: "kyk_erkek", user: "Barış", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 2, text: "Giriş kapısı biraz dar, akülü sandalye ucu ucuna geçiyor. Genişletilmeli.", date: "20 Mar 2026" },
+        { id: "muh_insaat", user: "Deniz", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Asansör bazen arıza yapıyor, merdivenler çok dik. Asansör çalışırken sorun yok.", date: "19 Mar 2026" }
     ];
 
     const state = {
@@ -50,29 +56,7 @@
         const liveComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         state.comments = [...liveComments, ...STATIC_COMMENTS]; 
         if (state.tab === "topluluk") render(); 
-    }, (error) => console.error("Firestore Dinleme Hatası:", error));
-
-    // YENİ: Gelişmiş Fotoğraf Sıkıştırma (Mobil için hayat kurtarır)
-    function resizeImage(base64Str, maxWidth = 800) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = base64Str;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7)); // %70 kalite, JPEG formatı (en hafifi)
-            };
-        });
-    }
+    });
 
     function getProfileBadge(profile) {
         const badges = {
@@ -87,6 +71,7 @@
         return `<span class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border ${badge.style}"><i class="ph-fill ${badge.icon}"></i> ${profile}</span>`;
     }
 
+    // Geri kalan render ve işlev fonksiyonları (Önceki kodun aynısı)
     function renderGiris() {
         return `
             <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center px-6 animate-fade-in -mt-4">
@@ -184,15 +169,36 @@
         }
     }
 
+    async function resizeImage(base64Str, maxWidth = 800) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        });
+    }
+
     async function runAI() {
         if (!state.selectedLoc || !state.imageSource) return alert("Konum seçin ve fotoğraf çekin!");
         state.showModal = true; state.geminiLoading = true; render();
         const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const context = locComments.map(c => `${c.profile}: ${c.text}`).join(" | ");
-        const prompt = `SİSTEM MESAJI: Sen İYTE kampüsündeki öğrencilere rehberlik eden uzman bir 'Erişilebilirlik Danışmanı'sın. Konum: ${locInfo.title}, Profil: ${state.userProfile}, Özel Soru: ${state.customQuestion || 'Yok'}, Topluluk Deneyimleri: ${context}. Fotoğrafı analiz et, madde işaretli ve nazikçe yanıtla.`;
+        const prompt = `İYTE Erişilebilirlik Danışmanısın. Konum: ${locInfo.title}, Profil: ${state.userProfile}, Soru: ${state.customQuestion || 'Yok'}, Topluluk: ${context}. Fotoğrafı analiz et, madde işaretli ve nazikçe yanıtla.`;
         try {
-            const compressedImg = await resizeImage(state.imageSource, 1000); // AI için 1000px yeterli
+            const compressedImg = await resizeImage(state.imageSource, 1000);
             const base64Data = compressedImg.split(',')[1];
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST", headers: { "Content-Type": "application/json" },
@@ -212,31 +218,13 @@
         const text = state.newCommentText.trim();
         const rating = state.newCommentRating;
         const photo = state.newCommentPhoto;
-        
         if (!locId || !text || rating === 0) return alert("Eksik bilgi!");
-        
-        // YENİ: Fotoğrafı kaydetmeden önce küçültüyoruz
         let finalPhoto = "";
-        if (photo) {
-            finalPhoto = await resizeImage(photo, 600); // 600px genişlik Firebase için idealdir
-        }
-
+        if (photo) finalPhoto = await resizeImage(photo, 600);
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
-        
-        db.collection("comments").add({ 
-            locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, 
-            rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() 
-        })
-        .then(() => { 
-            state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; 
-            alert("Yorumun kaydedildi!"); 
-            render(); 
-        })
-        .catch((error) => {
-            alert("⚠️ Kayıt Hatası: " + error.message);
-            console.error(error);
-        });
+        db.collection("comments").add({ locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); });
     }
 
     app.addEventListener("click", e => {
