@@ -44,14 +44,11 @@
     };
 
     const app = document.getElementById("app");
-    const fullscreenOverlay = document.getElementById("fullscreenOverlay");
-    const fullscreenImage = document.getElementById("fullscreenImage");
 
-    // --- 3. CANLI VERİTABANI DİNLEYİCİSİ (SİHİR BURADA) ---
-    // Başkası yorum yaptığında anında senin ekranına düşmesini sağlar
+    // --- 3. CANLI VERİTABANI DİNLEYİCİSİ ---
     db.collection("comments").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
         state.comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (state.tab === "topluluk") render(); // Yorum gelirse ekranı anında yenile
+        if (state.tab === "topluluk") render(); 
     });
 
     // --- ARAYÜZ (HTML) FONKSİYONLARI ---
@@ -130,7 +127,25 @@
                 ${IYTE_LOCATIONS.map(loc => {
                     const locComments = state.comments.filter(c => c.locId === loc.id);
                     if (locComments.length === 0) return "";
-                    return `<div class="space-y-3"><h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md"><img src="${c.photo}" class="comment-photo border border-white/10" onclick="openFullscreen('${c.photo}')" alt="Kullanıcı Fotoğrafı"><div class="flex-1 space-y-1"><div class="flex justify-between items-center"><span class="font-bold text-sm text-slate-100">@${c.user}</span><span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p><div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div></div></div>`).join('')}</div>`;
+                    return `<div class="space-y-3">
+                        <h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>
+                        ${locComments.map(c => `
+                            <div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md">
+                                <img src="${c.photo}" class="comment-photo border border-white/10" onclick="openFullscreen('${c.photo}')" alt="Kullanıcı Fotoğrafı">
+                                <div class="flex-1 space-y-1">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-bold text-sm text-slate-100">@${c.user}</span>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span>
+                                            ${c.user === state.userName ? `<button data-action="delete-comment" data-id="${c.id}" class="text-rose-500 hover:scale-110 transition-transform bg-rose-500/10 p-1 rounded-md" title="Yorumu Sil">🗑️</button>` : ''}
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p>
+                                    <div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`;
                 }).join('')}
                 </div>
             </div>`;
@@ -170,7 +185,6 @@
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const communityContext = locComments.map(c => `Puan: ${c.rating}/5, Yorum: "${c.text}"`).join(" | ");
         
-        // Gelişmiş Prompt (Adım 4)
         const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın, üniversite öğrencilerinin kampüs içindeki fiziksel engelleri aşmalarına yardımcı olmaktır. 
 KULLANICI DURUMU: Konum: ${locInfo.title}. Önceki Yorumlar: ${communityContext || 'Henüz yorum yok.'}
 GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
@@ -205,7 +219,6 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][now.getMonth()]} ${now.getFullYear()}`;
 
-        // Veritabanına Yorum Ekleme (Firebase)
         db.collection("comments").add({
             locId: locId,
             user: state.userName,
@@ -216,7 +229,6 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
             timestamp: firebase.firestore.FieldValue.serverTimestamp()
         }).then(() => {
             state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0;
-            alert("Yorumun başarıyla topluluğa eklendi!");
             render();
         }).catch((error) => {
             alert("Yorum kaydedilemedi: " + error.message);
@@ -253,6 +265,14 @@ GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
         if (act === "close-modal") { state.showModal = false; render(); }
         if (act === "go-to-comments") { state.showModal = false; state.tab = "topluluk"; render(); }
         if (act === "add-new-comment") addNewComment();
+        
+        // SİLME İŞLEMİ BURADA YAKALANIYOR
+        if (act === "delete-comment") {
+            const commentId = btn.dataset.id;
+            if (confirm("Yorumunu tamamen silmek istediğine emin misin?")) {
+                db.collection("comments").doc(commentId).delete().catch(err => alert("Silinemedi: " + err.message));
+            }
+        }
     });
 
     app.addEventListener("change", e => {
