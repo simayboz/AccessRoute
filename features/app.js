@@ -1,7 +1,20 @@
 (function () {
-    // API Anahtarı ve Kalıcı Yorumları Hafızadan Çekme
+    // --- 1. FIREBASE KURULUMU VE BAĞLANTISI ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyC1zUYmKOTfjwSqYkoDUCSq73I4FPdp7yA",
+        authDomain: "accessroute-iyte.firebaseapp.com",
+        projectId: "accessroute-iyte",
+        storageBucket: "accessroute-iyte.firebasestorage.app",
+        messagingSenderId: "369877736663",
+        appId: "1:369877736663:web:34f28c80313bb3f71b6492"
+    };
+    
+    // Veritabanını Başlat
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // --- 2. UYGULAMA DEĞİŞKENLERİ ---
     let GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
-    const savedComments = localStorage.getItem("iyte_comments");
     
     const IYTE_LOCATIONS = [
         { id: "lib", title: "Kütüphane Rampası" },
@@ -24,35 +37,24 @@
         { id: "muh_malzeme", title: "Malzeme Bilimi ve Mühendisliği" }
     ];
 
-    const INITIAL_COMMENTS = savedComments ? JSON.parse(savedComments) : [
-        { id: "c1", locId: "chem", user: "Zülal Y.", photo: "https://images.unsplash.com/photo-1618510050511-62778523318f?q=80&w=400", rating: 2, text: "Çok dik, tekerlekli sandalye ile tek başıma çıkamadım.", date: "18 Mart 2026" },
-        { id: "c2", locId: "cafe", user: "Ahmet K.", photo: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=400", rating: 4, text: "Rampa güzel ama kapı ağır, yardım gerekebilir.", date: "19 Mart 2026" }
-    ];
-
     const state = {
         tab: "giris", userName: "", selectedLoc: "", imageSource: null,
         cameraActive: false, geminiLoading: false, geminiResult: "", showModal: false,
-        comments: INITIAL_COMMENTS, newCommentPhoto: null, newCommentText: "", newCommentRating: 0
+        comments: [], newCommentPhoto: null, newCommentText: "", newCommentRating: 0
     };
 
     const app = document.getElementById("app");
     const fullscreenOverlay = document.getElementById("fullscreenOverlay");
     const fullscreenImage = document.getElementById("fullscreenImage");
 
-    // Tam Ekran Fonksiyonları (Global Alanda Kalmalılar)
-    window.openFullscreen = function (imageSrc) {
-        if (!imageSrc) return;
-        fullscreenImage.src = imageSrc;
-        fullscreenOverlay.classList.add("active");
-        document.body.style.overflow = "hidden"; // Kaydırmayı kapat
-    }
+    // --- 3. CANLI VERİTABANI DİNLEYİCİSİ (SİHİR BURADA) ---
+    // Başkası yorum yaptığında anında senin ekranına düşmesini sağlar
+    db.collection("comments").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+        state.comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (state.tab === "topluluk") render(); // Yorum gelirse ekranı anında yenile
+    });
 
-    window.closeFullscreen = function () {
-        fullscreenOverlay.classList.remove("active");
-        fullscreenImage.src = "";
-        document.body.style.overflow = "auto"; // Kaydırmayı aç
-    }
-
+    // --- ARAYÜZ (HTML) FONKSİYONLARI ---
     function renderGiris() {
         return `
             <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center -mt-10">
@@ -70,7 +72,6 @@
     }
 
     function renderAnaliz() {
-        // Analiz kısmındaki fotoğraf için cursor-pointer ve openFullscreen ekledik
         const imgClass = state.imageSource ? "w-full h-full object-cover cursor-pointer" : "";
         const imgOnClick = state.imageSource ? `onclick="openFullscreen('${state.imageSource}')"` : "";
 
@@ -129,7 +130,6 @@
                 ${IYTE_LOCATIONS.map(loc => {
                     const locComments = state.comments.filter(c => c.locId === loc.id);
                     if (locComments.length === 0) return "";
-                    // Topluluk yorumlarındaki fotoğraflara openFullscreen ekledik
                     return `<div class="space-y-3"><h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md"><img src="${c.photo}" class="comment-photo border border-white/10" onclick="openFullscreen('${c.photo}')" alt="Kullanıcı Fotoğrafı"><div class="flex-1 space-y-1"><div class="flex justify-between items-center"><span class="font-bold text-sm text-slate-100">@${c.user}</span><span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p><div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div></div></div>`).join('')}</div>`;
                 }).join('')}
                 </div>
@@ -170,18 +170,13 @@
         const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
         const communityContext = locComments.map(c => `Puan: ${c.rating}/5, Yorum: "${c.text}"`).join(" | ");
         
-        const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın, üniversite öğrencilerinin (özellikle tekerlekli sandalye kullanan veya hareket kısıtlılığı olan bireylerin) kampüs içindeki fiziksel engelleri aşmalarına yardımcı olmaktır. Cevapların empatik, net ve doğrudan çözüm odaklı olmalıdır.
-
-KULLANICI DURUMU:
-- Kullanıcı Adı: ${state.userName}
-- Bulunduğu Konum: ${locInfo.title}
-- Bu Konumla İlgili Önceki Topluluk Yorumları: ${communityContext || 'Henüz yorum yok.'}
-
-GÖREV: Ekli fotoğrafı detaylıca analiz et ve aşağıdaki 3 başlıklı formatta (kısa ve öz) yanıt ver:
-
-1. GÖRSEL ANALİZİ: (Fotoğrafta ne görüyorsun? Bu bir yol/rampa mı yoksa ilgisiz bir obje/insan mı? İlgisizse sadece uyarı ver ve bitir).
-2. ERİŞİLEBİLİRLİK DURUMU: (Eğer bu bir yolsa/rampaysa eğimi nasıl? Tekerlekli sandalye ile tek başına çıkılabilir mi?)
-3. UZMAN TAVSİYESİ: (Önceki topluluk yorumlarını da dikkate alarak kullanıcıya ne tavsiye edersin? Yanında biri olmalı mı, yoksa alternatif bir yol mu aramalı?)`;
+        // Gelişmiş Prompt (Adım 4)
+        const prompt = `SİSTEM MESAJI: Sen uzman bir 'Engelsiz Yaşam ve Fiziksel Erişilebilirlik Danışmanı'sın. Amacın, üniversite öğrencilerinin kampüs içindeki fiziksel engelleri aşmalarına yardımcı olmaktır. 
+KULLANICI DURUMU: Konum: ${locInfo.title}. Önceki Yorumlar: ${communityContext || 'Henüz yorum yok.'}
+GÖREV: Ekli fotoğrafı analiz et ve 3 başlıklı formatta yanıt ver:
+1. GÖRSEL ANALİZİ: (Fotoğrafta ne görüyorsun?)
+2. ERİŞİLEBİLİRLİK DURUMU: (Eğimi nasıl? Tek başına çıkılabilir mi?)
+3. UZMAN TAVSİYESİ: (Önceki yorumları dikkate alarak ne tavsiye edersin?)`;
 
         try {
             const base64Data = state.imageSource.split(',')[1];
@@ -210,14 +205,22 @@ GÖREV: Ekli fotoğrafı detaylıca analiz et ve aşağıdaki 3 başlıklı form
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][now.getMonth()]} ${now.getFullYear()}`;
 
-        const newComment = { id: "c" + Date.now(), locId, user: state.userName, photo, rating, text, date: formattedDate };
-        state.comments = [newComment, ...state.comments];
-        
-        localStorage.setItem("iyte_comments", JSON.stringify(state.comments));
-        
-        state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0;
-        alert("Yorumun başarıyla topluluğa kaydedildi!");
-        render();
+        // Veritabanına Yorum Ekleme (Firebase)
+        db.collection("comments").add({
+            locId: locId,
+            user: state.userName,
+            photo: photo,
+            rating: rating,
+            text: text,
+            date: formattedDate,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => {
+            state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0;
+            alert("Yorumun başarıyla topluluğa eklendi!");
+            render();
+        }).catch((error) => {
+            alert("Yorum kaydedilemedi: " + error.message);
+        });
     }
 
     // --- EVENT DİNLEYİCİLERİ ---
