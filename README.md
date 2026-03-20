@@ -1,34 +1,19 @@
-# AccessRoute
+# İYTE AccessRoute - Engelsiz Kampüs Asistanı
 
-Bu repo, `prd.md` ve `tasks.md` uzerinden MVP gelistirme baslangic iskeletidir.
+AccessRoute, İYTE kampüsündeki fiziksel engelleri tespit etmek ve topluluk bilinci oluşturmak için geliştirilmiş yapay zeka destekli bir web uygulamasıdır.
 
-## Calistirma
+## 🚀 Temel Özellikler
+* **Yapay Zeka Analizi (Kullanıcı Input -> AI Output):** Kullanıcı bir kampüs noktasının fotoğrafını çeker. Gemini AI bu fotoğrafı analiz ederek tekerlekli sandalye veya yürüme zorluğu çeken bireyler için uygunluğunu değerlendirir.
+* **Topluluk Deneyimi:** Öğrenciler kampüs mekanları hakkında fotoğraflı ve puanlı yorum bırakabilir.
 
-Bu asamada proje saf HTML + ES module oldugu icin dosyayi tarayicida acmaniz yeterlidir:
+## 📁 Proje Yapısı
+* `index.html`: Ana arayüz ve sayfa yapısı.
+* `features/app.js`: Yapay zeka isteklerini ve uygulama mantığını yöneten temel özellik dosyası.
 
-1. `index.html` dosyasini acin.
-2. Mobil test icin HTTPS uzerinden servis edin (telefon sensor API'leri icin onerilir).
+## 💻 Kurulum ve Çalıştırma
+Proje tamamen frontend odaklı ve sunucusuz (serverless) çalışır. 
 
-## Mevcut Akis (MVP Iskelet)
-
-- Profil secimi (`Bedensel` / `Gorme`)
-- Olcum/analiz ekrani
-- Sensor tabanli egim olcumu (Device Orientation API)
-- Sonuc ekrani (`guvenli` / `riskli`)
-- Harita placeholder ekrani
-
-## Ortam Degiskenleri
-
-Ornek anahtarlar icin `.env.example` dosyasini inceleyin:
-
-- `GEMINI_API_KEY`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
-- `FIREBASE_API_KEY`
-
-## Mobil ve Sensor Uyumlulugu
-
-- `DeviceOrientationEvent` destegi gerekir.
-- iOS Safari'de hareket sensoru icin kullanici izni gerekir.
-- Kamera/mikrofon/konum adimlari sonraki gorevlerde eklenecektir.
-- Telefon testleri icin HTTPS tercih edin.
+1. Repoyu bilgisayarınıza klonlayın:
+   git clone https://github.com/simayboz/AccessRoute.git
+2. Klasörün içine girin ve `index.html` dosyasını Chrome, Safari veya Edge gibi bir tarayıcıda açın.
+3. Yapay zekanın çalışması için projede API anahtarı ayarlanmıştır, direkt isminizi girerek test edebilirsiniz.
