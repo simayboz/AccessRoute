@@ -27,10 +27,26 @@
             let GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
             const savedComments = localStorage.getItem("iyte_comments");
             
+            // KONUMLAR GÜNCELLENDİ: Eskiler korundu, yeniler eklendi
             const IYTE_LOCATIONS = [
                 { id: "lib", title: "Kütüphane Rampası" },
                 { id: "cafe", title: "Yemekhane Girişi" },
-                { id: "chem", title: "Kimya Müh. Yokuşu" }
+                { id: "chem", title: "Kimya Müh. Yokuşu" },
+                { id: "kyk_kiz", title: "KYK Kız Yurdu" },
+                { id: "kyk_erkek", title: "KYK Erkek Yurdu" },
+                { id: "hazirlik", title: "Hazırlık Binası" },
+                { id: "opera_kafe", title: "Opera Kafe" },
+                { id: "koy_yokusu", title: "Köy Yokuşu" },
+                { id: "muh_bilgisayar", title: "Bilgisayar Mühendisliği" },
+                { id: "muh_biyomuhendislik", title: "Biyomühendislik" },
+                { id: "muh_cevre", title: "Çevre Mühendisliği" },
+                { id: "muh_enerji", title: "Enerji Sistemleri Mühendisliği" },
+                { id: "muh_elektronik", title: "Elektronik ve Haberleşme Mühendisliği" },
+                { id: "muh_gida", title: "Gıda Mühendisliği" },
+                { id: "muh_insaat", title: "İnşaat Mühendisliği" },
+                { id: "muh_kimya", title: "Kimya Mühendisliği" },
+                { id: "muh_makine", title: "Makine Mühendisliği" },
+                { id: "muh_malzeme", title: "Malzeme Bilimi ve Mühendisliği" }
             ];
 
             // Eğer hafızada yorum yoksa Zülal ve Ahmet'in varsayılan yorumlarını göster
