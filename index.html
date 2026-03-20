@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>İYTE AccessRoute - Prototip</title>
+    <title>İYTE AccessRoute - Engelsiz Kampüs</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background: #0f172a; padding-bottom: 80px; }
@@ -12,6 +12,7 @@
         .camera-box { position: relative; border-radius: 24px; overflow: hidden; height: 300px; background: #020617; }
         #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
         .comment-photo { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+        /* Letterboxd Yıldız Stili */
         .star-rating { direction: rtl; display: inline-flex; }
         .star-rating input { display: none; }
         .star-rating label { color: #475569; font-size: 2rem; padding: 0 0.1rem; cursor: pointer; transition: color 0.2s; }
@@ -23,10 +24,10 @@
 
     <script>
         (function () {
-            // --- API ANAHTARI BURAYA ---
-            const GEMINI_API_KEY = ""; 
-            // ---------------------------
-
+            // --- GÜVENLİ API ANAHTARI SİSTEMİ ---
+            let GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
+            // Eğer cihazda anahtar yoksa, kullanıcıdan isteyeceğiz (uygulama içinde)
+            
             const IYTE_LOCATIONS = [
                 { id: "lib", title: "Kütüphane Rampası" },
                 { id: "cafe", title: "Yemekhane Girişi" },
@@ -34,12 +35,12 @@
             ];
 
             const INITIAL_COMMENTS = [
-                { id: "c1", locId: "chem", user: "Ahmet Yılmaz", photo: "https://images.unsplash.com/photo-1618510050511-62778523318f?q=80&w=400", rating: 2, text: "Çok dik, tekerlekli sandalye için imkansız.", date: "15 Mart 2024" },
+                { id: "c1", locId: "chem", user: "Zülal", photo: "https://images.unsplash.com/photo-1618510050511-62778523318f?q=80&w=400", rating: 2, text: "Çok dik, tekerlekli sandalye ile tek başıma çıkamadım.", date: "18 Mart 2026" },
             ];
 
             const state = {
-                tab: "giris", // Başlangıç ekranı
-                userName: "", // Giriş ekranında dolacak
+                tab: "giris", 
+                userName: "", 
                 selectedLoc: "",
                 imageSource: null,
                 cameraActive: false,
@@ -47,25 +48,27 @@
                 geminiResult: "",
                 showModal: false,
                 comments: INITIAL_COMMENTS,
-                // Yorum Ekleme Formu State'i
                 newCommentPhoto: null,
                 newCommentText: "",
-                newCommentRating: 0 // Letterboxd yıldızları için
+                newCommentRating: 0
             };
 
             const app = document.getElementById("app");
 
             function renderGiris() {
                 return `
-                    <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center">
-                        <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="h-24 w-24 mb-4">
-                        <div class="iyte-red p-4 rounded-2xl shadow-xl">
+                    <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center -mt-10">
+                        <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="h-24 w-24 mb-4 opacity-90">
+                        <div class="iyte-red p-5 rounded-3xl shadow-2xl w-full max-w-xs">
                             <h1 class="text-3xl font-black italic text-white">AccessRoute</h1>
-                            <p class="text-sm text-red-100">İYTE Engelsiz Kampüs Asistanı</p>
+                            <p class="text-sm text-red-100 mt-1">İYTE Engelsiz Kampüs Asistanı</p>
                         </div>
-                        <p class="text-slate-400 text-sm max-w-xs">Kampüsü daha erişilebilir kılmak için giriş yapın ve topluluğa katılın.</p>
-                        <input type="text" id="userNameInput" placeholder="Adınız Soyadınız" class="w-full max-w-xs bg-white/5 border border-white/10 rounded-xl p-4 text-center text-lg outline-none focus:border-red-500">
-                        <button data-action="submit-login" class="w-full max-w-xs iyte-red py-4 rounded-xl font-black text-white shadow-lg active:scale-95 transition-transform">Başla</button>
+                        <div class="w-full max-w-xs space-y-4">
+                            <input type="text" id="userNameInput" placeholder="Adınız Soyadınız" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-lg outline-none focus:border-red-500 transition-colors">
+                            ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (Zorunlu)" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-center text-sm outline-none focus:border-red-500 transition-colors text-emerald-400">
+                            <p class="text-[10px] text-slate-500">API Anahtarı sadece bu cihazda tutulur, güvenlidir.</p>` : `<p class="text-xs text-emerald-500 font-bold">✅ API Anahtarı Cihazda Kayıtlı</p>`}
+                            <button data-action="submit-login" class="w-full iyte-red py-4 rounded-xl font-black text-white shadow-lg active:scale-95 transition-transform text-lg mt-2">Uygulamaya Başla</button>
+                        </div>
                     </div>
                 `;
             }
@@ -76,35 +79,35 @@
                         <div class="iyte-red rounded-3xl p-6 shadow-xl flex justify-between items-center">
                             <div>
                                 <h1 class="text-2xl font-black italic">İYTE ANALİZ</h1>
-                                <p class="text-xs opacity-80">Hoş geldin, ${state.userName}</p>
+                                <p class="text-xs opacity-80">Hoş geldin, <span class="font-bold">${state.userName}</span></p>
                             </div>
                             <img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="h-12 w-12 opacity-80">
                         </div>
 
                         <div class="glass rounded-2xl p-4">
-                            <label class="text-[10px] font-bold uppercase text-slate-400">Konum Seç:</label>
-                            <select id="locSelect" class="w-full bg-transparent border-b border-slate-600 py-2 text-sm outline-none text-slate-100">
-                                <option value="" class="bg-slate-900 text-slate-500">İşaretle...</option>
+                            <label class="text-[10px] font-bold uppercase text-slate-400">Önce Konumu Seç:</label>
+                            <select id="locSelect" class="w-full bg-transparent border-b border-slate-600 py-2 text-sm outline-none text-slate-100 focus:border-red-500">
+                                <option value="" class="bg-slate-900 text-slate-500">Haritadan İşaretle...</option>
                                 ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" class="bg-slate-900" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
                             </select>
                         </div>
 
-                        <div class="camera-box shadow-2xl">
+                        <div class="camera-box shadow-2xl border border-white/10">
                             ${state.cameraActive ? '<video id="cameraVideo" autoplay playsinline muted></video>' : 
                              (state.imageSource ? `<img src="${state.imageSource}" class="w-full h-full object-cover">` : 
-                             '<div class="flex items-center justify-center h-full text-slate-500 text-sm italic">Fotoğraf Çekin...</div>')}
-                            ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-red-600 p-4 rounded-full text-2xl shadow-lg">📸</button>' : ''}
+                             '<div class="flex items-center justify-center h-full text-slate-500 text-sm italic">Fotoğraf Çekin veya Seçin...</div>')}
+                            ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-red-600 p-4 rounded-full text-2xl shadow-lg active:scale-90">📸</button>' : ''}
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             ${state.cameraActive ? 
-                                '<button data-action="stop-camera" class="glass rounded-xl py-4 text-xs font-bold uppercase text-rose-400">❌ Kapat</button>' :
-                                '<button data-action="open-camera" class="glass rounded-xl py-4 text-xs font-bold uppercase text-emerald-400">📷 Kamera</button>'
+                                '<button data-action="stop-camera" class="glass rounded-xl py-4 text-xs font-bold uppercase text-rose-400">❌ Kamerayı Kapat</button>' :
+                                '<button data-action="open-camera" class="glass rounded-xl py-4 text-xs font-bold uppercase text-emerald-400">📷 Kamerayı Aç</button>'
                             }
-                            <label class="glass rounded-xl py-4 text-xs font-bold uppercase text-sky-400 flex items-center justify-center cursor-pointer">📂 Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
+                            <label class="glass rounded-xl py-4 text-xs font-bold uppercase text-sky-400 flex items-center justify-center cursor-pointer">📂 Galeriden Seç<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
                         </div>
 
-                        <button data-action="run-ai" class="w-full iyte-red py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2">✨ ANALİZ ET</button>
+                        <button data-action="run-ai" class="w-full iyte-red py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-transform">✨ GERÇEK ANALİZ YAP</button>
                     </div>
                 `;
             }
@@ -113,18 +116,27 @@
                 const addPhotoBtnClass = state.newCommentPhoto ? "border-emerald-500" : "border-slate-600";
                 return `
                     <div class="space-y-6 pt-2">
-                        <h2 class="text-xl font-bold border-b border-red-600 pb-2 inline-block">Topluluk Notları</h2>
+                        <h2 class="text-xl font-bold border-b border-red-600 pb-2 inline-block">İYTE Topluluk Notları</h2>
 
-                        <div class="glass rounded-2xl p-5 space-y-3 border border-white/10">
-                            <div class="flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded-full iyte-red flex items-center justify-center font-bold text-xs">${state.userName.substring(0,2).toUpperCase()}</div><span class="text-sm font-bold">${state.userName} olarak yorum yap</span></div>
-                            <select id="newLocSelect" class="w-full bg-slate-800 rounded-xl p-3 text-sm text-slate-200"><option value="">Konum Seç...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}">${l.title}</option>`).join('')}</select>
+                        <div class="glass rounded-2xl p-5 space-y-4 border border-white/10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-8 h-8 rounded-full iyte-red flex items-center justify-center font-bold text-xs">${state.userName.substring(0,2).toUpperCase()}</div>
+                                <span class="text-sm font-bold text-slate-200">${state.userName} olarak yorum yap</span>
+                            </div>
+                            <select id="newLocSelect" class="w-full bg-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:ring-2 focus:ring-red-500">
+                                <option value="">Konum Seç...</option>
+                                ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
+                            </select>
                             
                             <div class="flex gap-3 items-center">
-                                <label class="border-2 border-dashed ${addPhotoBtnClass} rounded-xl w-20 h-20 flex flex-col items-center justify-center cursor-pointer text-slate-500 hover:text-slate-300">${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover rounded-xl">` : '<span class="text-2xl">+</span><span class="text-[9px]">Foto</span>'}<input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput"></label>
-                                <textarea id="newCommentText" class="flex-1 bg-slate-800 rounded-xl p-3 text-sm h-20 outline-none" placeholder="Rampa durumu, rüzgar..."></textarea>
+                                <label class="border-2 border-dashed ${addPhotoBtnClass} rounded-xl w-24 h-24 flex flex-col items-center justify-center cursor-pointer text-slate-500 hover:text-slate-300 flex-shrink-0 overflow-hidden">
+                                    ${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover">` : '<span class="text-3xl">+</span><span class="text-[10px] mt-1">Fotoğraf</span>'}
+                                    <input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput">
+                                </label>
+                                <textarea id="newCommentText" class="flex-1 bg-slate-800 rounded-xl p-3 text-sm h-24 outline-none text-slate-100 resize-none" placeholder="Buradaki deneyimini detaylıca anlat..."></textarea>
                             </div>
                             
-                            <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center justify-between gap-2 bg-slate-900/50 p-3 rounded-xl">
                                 <div class="star-rating">
                                     <input type="radio" id="star5" name="rating" value="5" /><label for="star5">★</label>
                                     <input type="radio" id="star4" name="rating" value="4" /><label for="star4">★</label>
@@ -132,15 +144,32 @@
                                     <input type="radio" id="star2" name="rating" value="2" /><label for="star2">★</label>
                                     <input type="radio" id="star1" name="rating" value="1" /><label for="star1">★</label>
                                 </div>
-                                <button data-action="add-new-comment" class="flex-1 iyte-red py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Paylaş</button>
+                                <button data-action="add-new-comment" class="iyte-red px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95">Paylaş</button>
                             </div>
                         </div>
 
-                        <div class="space-y-4">
+                        <div class="space-y-5">
                         ${IYTE_LOCATIONS.map(loc => {
                             const locComments = state.comments.filter(c => c.locId === loc.id);
                             if (locComments.length === 0) return "";
-                            return `<div class="space-y-3"><h3 class="font-bold text-red-400 text-sm pl-2">${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md"><img src="${c.photo}" class="comment-photo border border-white/10"><div class="flex-1 space-y-1"><div class="flex justify-between items-center"><span class="font-bold text-sm text-slate-100">@${c.user}</span><span class="text-[10px] text-slate-500">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed">${c.text}</p><div class="text-[10px] font-bold text-amber-400">${'⭐'.repeat(c.rating)}</div></div></div>`).join('')}</div>`;
+                            return `
+                                <div class="space-y-3">
+                                    <h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>
+                                    ${locComments.map(c => `
+                                        <div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md">
+                                            <img src="${c.photo}" class="comment-photo border border-white/10">
+                                            <div class="flex-1 space-y-1">
+                                                <div class="flex justify-between items-center">
+                                                    <span class="font-bold text-sm text-slate-100">@${c.user}</span>
+                                                    <span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span>
+                                                </div>
+                                                <p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p>
+                                                <div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
                         }).join('')}
                         </div>
                     </div>
@@ -149,13 +178,35 @@
 
             function renderModal() {
                 if (!state.showModal) return "";
-                return `<div class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/95 backdrop-blur-md"><div class="bg-white text-slate-900 rounded-[32px] p-8 w-full shadow-2xl border-t-8 border-red-600"><h3 class="font-black italic text-red-700 text-xl mb-4 uppercase flex items-center gap-2">🤖 AI Kararı</h3>${state.geminiLoading ? '<div class="animate-pulse py-6 text-sm font-bold text-slate-400">Veriler harmanlanıyor...</div>' : `<div class="text-sm leading-relaxed mb-6 font-medium bg-slate-100 p-4 rounded-xl border border-slate-200">${state.geminiResult}</div>`}<div class="space-y-3 mt-4"><button data-action="go-to-comments" class="w-full py-4 iyte-red text-white rounded-xl font-bold text-xs uppercase tracking-widest">Yorum Yapmak İster Misin?</button><button data-action="close-modal" class="w-full py-3 text-slate-400 text-xs font-bold uppercase">Kapat</button></div></div></div>`;
+                return `
+                    <div class="modal-backdrop fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/95 backdrop-blur-md">
+                        <div class="bg-white text-slate-900 rounded-[32px] p-8 w-full shadow-2xl border-t-8 border-red-600 relative overflow-hidden">
+                            <h3 class="font-black italic text-red-700 text-xl mb-4 uppercase flex items-center gap-2">🤖 İYTE AI Asistan</h3>
+                            ${state.geminiLoading ? 
+                            '<div class="flex flex-col items-center justify-center py-8 space-y-4"><div class="w-10 h-10 border-4 border-red-200 border-t-red-600 rounded-full animate-spin"></div><p class="text-sm font-bold text-slate-500 animate-pulse">Görsel ve Topluluk Verileri Analiz Ediliyor...</p></div>' : 
+                            `<div class="text-sm leading-relaxed mb-6 font-medium bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-inner max-h-60 overflow-y-auto">${state.geminiResult}</div>`}
+                            
+                            ${!state.geminiLoading ? `
+                            <div class="space-y-3 mt-2">
+                                <button data-action="go-to-comments" class="w-full py-4 iyte-red text-white rounded-xl font-bold text-xs uppercase tracking-widest active:scale-95 transition-transform shadow-md">Bu Konuma Yorum Yap</button>
+                                <button data-action="close-modal" class="w-full py-3 text-slate-500 text-xs font-bold uppercase hover:text-slate-800 transition-colors">Kapat</button>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
             }
 
             function renderTabBar() {
                 if (state.tab === "giris") return "";
-                const tabs = [{ id: "analiz", label: "Analiz", icon: "📷" }, { id: "topluluk", label: "Topluluk", icon: "💬" }];
-                return `<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[400px] glass rounded-full p-2 flex justify-around shadow-2xl z-50">${tabs.map(t => `<button data-action="tab" data-id="${t.id}" class="flex-1 py-3 rounded-full ${state.tab===t.id?'iyte-red text-white':'text-slate-500'} font-bold text-[10px] uppercase flex flex-col items-center gap-1"><span class="text-lg">${t.icon}</span>${t.label}</button>`).join('')}</nav>`;
+                const tabs = [
+                    { id: "analiz", label: "Analiz", icon: "📷" }, 
+                    { id: "topluluk", label: "Topluluk", icon: "💬" }
+                ];
+                return `
+                    <nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[400px] glass rounded-full p-2 flex justify-around shadow-2xl z-50">
+                        ${tabs.map(t => `<button data-action="tab" data-id="${t.id}" class="flex-1 py-3 rounded-full ${state.tab===t.id?'iyte-red text-white shadow-lg':'text-slate-400 hover:text-white'} font-bold text-[10px] uppercase flex flex-col items-center gap-1 transition-all"><span class="text-lg mb-1">${t.icon}</span>${t.label}</button>`).join('')}
+                    </nav>
+                `;
             }
 
             function render() {
@@ -164,15 +215,21 @@
                 else if (state.tab === "analiz") content = renderAnaliz();
                 else content = renderTopluluk();
                 app.innerHTML = content + renderModal() + renderTabBar();
-                if (state.cameraActive) startVideo();
+                if (state.cameraActive && state.tab === "analiz") startVideo();
             }
 
-            // --- MEDYA VE AI FONKSİYONLARI ---
+            // --- MEDYA FONKSİYONLARI ---
             async function startVideo() {
                 const v = document.getElementById("cameraVideo");
                 if (v && !stream) {
-                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-                    v.srcObject = stream;
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                        v.srcObject = stream;
+                    } catch (e) {
+                        alert("Kamera izni alınamadı!");
+                        state.cameraActive = false;
+                        render();
+                    }
                 }
             }
 
@@ -182,8 +239,9 @@
                 canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                 canvas.getContext("2d").drawImage(video, 0, 0);
                 state.imageSource = canvas.toDataURL("image/jpeg");
-                state.newCommentPhoto = state.imageSource; // Yorum formu için de hazırla
-                stopVideo(); render();
+                state.newCommentPhoto = state.imageSource; // Yorum formu için de kopyala
+                stopVideo(); 
+                render();
             }
 
             function stopVideo() {
@@ -191,16 +249,73 @@
                 state.cameraActive = false;
             }
 
+            // --- GERÇEK YAPAY ZEKA BAĞLANTISI ---
             async function runAI() {
-                if (!state.selectedLoc) return alert("⚠️ Önce konum seçin!");
-                if (!state.imageSource) return alert("⚠️ Önce fotoğraf çekin!");
-                state.showModal = true; state.geminiLoading = true; render();
-                // Simülasyon
-                setTimeout(() => {
-                    state.geminiLoading = false;
-                    state.geminiResult = `🤖 **Merhaba ${state.userName.split(' ')[0]}**, Kütüphane Rampası fotoğrafını analiz ettim. Eğim %12 civarında. Ahmet Yılmaz'ın 'Rampa başında çökme var' yorumunu da hesaba katarsak, burayı tek başına geçmen riskli olabilir. Lütfen yardım al!`;
+                if (!state.selectedLoc) return alert("⚠️ Lütfen önce haritadan bir konum seçin!");
+                if (!state.imageSource) return alert("⚠️ Lütfen bir fotoğraf çekin veya galeriden seçin!");
+                if (!GEMINI_API_KEY) {
+                    alert("⚠️ API Anahtarı eksik. Uygulamayı yenileyip anahtarınızı girin.");
+                    state.tab = "giris";
                     render();
-                }, 2000);
+                    return;
+                }
+
+                state.showModal = true; 
+                state.geminiLoading = true; 
+                render();
+
+                // İlgili konumun bilgilerini ve yorumlarını topla
+                const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
+                const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
+                const communityContext = locComments.map(c => `Tarih: ${c.date}, Puan: ${c.rating}/5, Yorum: "${c.text}"`).join("\n");
+                
+                // Gemini'ye giden Akıllı Prompt (Komut)
+                const prompt = `
+                    Sen İYTE (İzmir Yüksek Teknoloji Enstitüsü) kampüsüne özel bir erişilebilirlik asistanısın. 
+                    Kullanıcının Adı: ${state.userName}. 
+                    Seçilen Konum: ${locInfo.title}.
+                    Bu konum için diğer öğrencilerin geçmiş yorumları:
+                    ${communityContext || "Henüz bu konum için yorum yapılmamış."}
+                    
+                    GÖREVİN:
+                    Gönderilen fotoğrafı analiz et. Görselde ne görüyorsun? (Rampa mı, merdiven mi, insan mı, eşya mı?). 
+                    Eğer görsel rampa/yol gibi erişilebilirlikle alakalı DEĞİLSE (örneğin bir insan yüzü veya alakasız bir eşya ise), kullanıcıyı esprili bir dille uyar ("Bu bir rampa değil" gibi).
+                    Eğer görsel erişilebilirlikle alakalıysa, rampa eğimini ve durumunu yorumla. Geçmiş öğrenci yorumlarını (varsa) hesaba katarak ${state.userName}'e samimi, İYTE ruhuna uygun ve koruyucu bir tavsiye ver (Riskliyse birinden yardım istemesini öner).
+                    Çıktıyı Markdown kullanarak güzelce formatla (kalın yazılar vb.).
+                `;
+
+                try {
+                    const base64Data = state.imageSource.split(',')[1];
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Data } }] }]
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) throw new Error(data.error.message);
+                    
+                    // Markdown formatını HTML'e basitçe çeviriyoruz (kalın yazılar için)
+                    let textResult = data.candidates[0].content.parts[0].text;
+                    textResult = textResult.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    
+                    state.geminiResult = textResult;
+
+                } catch (error) {
+                    console.error(error);
+                    state.geminiResult = `❌ **Hata Oluştu:** API anahtarınız yanlış olabilir veya bağlantı sorunu var. Lütfen anahtarınızı kontrol edin. (${error.message})`;
+                    // Hatalı anahtarı temizle ki tekrar sorabilsin
+                    if(error.message.includes("API key not valid")) {
+                        localStorage.removeItem("gemini_api_key");
+                        GEMINI_API_KEY = null;
+                    }
+                }
+
+                state.geminiLoading = false; 
+                render();
             }
 
             function addNewComment() {
@@ -208,29 +323,45 @@
                 const text = state.newCommentText.trim();
                 const rating = state.newCommentRating;
                 const photo = state.newCommentPhoto;
-                if (!locId || !text || !photo || rating === 0) return alert("⚠️ Konum, fotoğraf, puan ve yorum eksik!");
+                
+                if (!locId || !text || !photo || rating === 0) return alert("⚠️ Lütfen konum, fotoğraf, yorum metni ve yıldız puanını eksiksiz doldurun!");
 
                 const now = new Date();
                 const formattedDate = `${now.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][now.getMonth()]} ${now.getFullYear()}`;
 
-                state.comments = [{ id: "c" + (state.comments.length + 1), locId, user: state.userName, photo, rating, text, date: formattedDate }, ...state.comments];
+                // Yeni yorumu en başa ekle
+                state.comments = [{ id: "c" + Date.now(), locId, user: state.userName, photo, rating, text, date: formattedDate }, ...state.comments];
                 
-                // Formu temizle
+                // Formu sıfırla
                 state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; state.imageSource = null;
+                alert("Yorumun başarıyla topluluğa eklendi!");
                 render();
             }
 
-            let stream = null;
-
-            // --- EVENTS ---
+            // --- OLAY DİNLEYİCİLER (EVENTS) ---
             app.addEventListener("click", e => {
                 const btn = e.target.closest("[data-action]");
                 if (!btn) return;
                 const act = btn.dataset.action;
+                
                 if (act === "submit-login") {
                     const name = document.getElementById("userNameInput").value.trim();
-                    if (name.length < 3) return alert("⚠️ Lütfen adınızı soyadınızı girin.");
-                    state.userName = name; state.tab = "analiz"; render();
+                    if (name.length < 2) return alert("⚠️ Lütfen geçerli bir isim girin.");
+                    
+                    // API Key kaydetme
+                    if (!GEMINI_API_KEY) {
+                        const keyInput = document.getElementById("apiKeyInput");
+                        if(keyInput) {
+                            const newKey = keyInput.value.trim();
+                            if (newKey.length < 10) return alert("⚠️ Lütfen geçerli bir API Anahtarı girin!");
+                            GEMINI_API_KEY = newKey;
+                            localStorage.setItem("gemini_api_key", GEMINI_API_KEY);
+                        }
+                    }
+                    
+                    state.userName = name; 
+                    state.tab = "analiz"; 
+                    render();
                 }
                 if (act === "tab") { state.tab = btn.dataset.id; render(); }
                 if (act === "open-camera") { state.cameraActive = true; render(); }
@@ -238,18 +369,32 @@
                 if (act === "stop-camera") { stopVideo(); render(); }
                 if (act === "run-ai") runAI();
                 if (act === "close-modal") { state.showModal = false; render(); }
-                if (act === "go-to-comments") { state.showModal = false; state.tab = "topluluk"; render(); }
+                if (act === "go-to-comments") { 
+                    state.showModal = false; 
+                    state.tab = "topluluk"; 
+                    render(); 
+                }
                 if (act === "add-new-comment") addNewComment();
             });
 
-            // Yıldız Tıklamalarını Yakala
+            // Input ve Değişimleri Dinle
             app.addEventListener("change", e => {
                 if (e.target.name === "rating") state.newCommentRating = parseInt(e.target.value);
-                if (e.target.id === "locSelect") state.selectedLoc = e.target.value;
-                if (e.target.id === "newCommentText") state.newCommentText = e.target.value;
+                if (e.target.id === "locSelect") {
+                    state.selectedLoc = e.target.value;
+                    // Yorum sekmesindeki seçimi de eşitle
+                    const newLocSelect = document.getElementById("newLocSelect");
+                    if(newLocSelect) newLocSelect.value = e.target.value;
+                }
+                if (e.target.id === "newLocSelect") state.selectedLoc = e.target.value;
                 if (e.target.id === "galleryInput" && e.target.files[0]) {
                     const reader = new FileReader();
-                    reader.onload = ev => { state.imageSource = ev.target.result; state.newCommentPhoto = state.imageSource; state.cameraActive = false; render(); };
+                    reader.onload = ev => { 
+                        state.imageSource = ev.target.result; 
+                        state.newCommentPhoto = state.imageSource; 
+                        state.cameraActive = false; 
+                        render(); 
+                    };
                     reader.readAsDataURL(e.target.files[0]);
                 }
                 if (e.target.id === "newCommentPhotoInput" && e.target.files[0]) {
@@ -259,6 +404,11 @@
                 }
             });
 
+            app.addEventListener("input", e => {
+                if (e.target.id === "newCommentText") state.newCommentText = e.target.value;
+            });
+
+            // İlk ekranı çiz
             render();
         })();
     </script>
