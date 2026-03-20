@@ -18,7 +18,7 @@
         position: relative;
         border-radius: 18px;
         overflow: hidden;
-        height: min(65vh, 500px); /* Ekranı biraz daha optimize ettik */
+        height: min(65vh, 500px);
         background: #020617;
         box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       }
@@ -30,7 +30,6 @@
         height: 100%;
         object-fit: cover;
       }
-      /* Modal Arka Planı */
       .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -48,20 +47,12 @@
     <main id="app" class="mx-auto min-h-screen w-full max-w-md px-4 pb-24 pt-4"></main>
     <script>
       (function () {
-        // --- BURASI ÇOK ÖNEMLİ: KENDİ GEMINI API ANAHTARINI BURAYA YAZACAKSIN ---
-        // Eğer boş bırakırsan, sistem "Simülasyon Modunda" çalışır ve örnek bir cevap verir.
+        // --- API ANAHTARI BURAYA GELECEK ---
         const GEMINI_API_KEY = ""; 
-        // --------------------------------------------------------------------------
 
         const FEED = [
-          {
-            id: "1", title: "Alsancak Kordon - Bozuk Kaldırım", location: "Konak, İzmir",
-            risk: "Yüksek", reactions: 21, notes: ["Ben de buradayım, hâlâ geçilmiyor."]
-          },
-          {
-            id: "2", title: "İzmir Metro - Bozuk Asansör", location: "Halkapınar",
-            risk: "Yüksek", reactions: 30, notes: ["Asansör kapalı, alternatif rota çok uzun."]
-          }
+          { id: "1", title: "Alsancak Kordon - Bozuk Kaldırım", location: "Konak, İzmir", risk: "Yüksek", reactions: 21, notes: ["Ben de buradayım, hâlâ geçilmiyor."] },
+          { id: "2", title: "İzmir Metro - Bozuk Asansör", location: "Halkapınar", risk: "Yüksek", reactions: 30, notes: ["Asansör kapalı."] }
         ];
 
         const state = {
@@ -80,7 +71,6 @@
           alignWarning: "Ölçüm için telefonu rampaya paralel tutun.",
           aiInsight: "Zemin taranıyor...",
           aiConfidence: 0,
-          // Modal State
           showModal: false,
           geminiLoading: false,
           geminiResult: ""
@@ -89,7 +79,6 @@
         let stream = null;
         let rafId = null;
         let orientationEnabled = false;
-        let lastSpokenStatus = "";
 
         const app = document.getElementById("app");
 
@@ -115,8 +104,6 @@
               '<div><p class="text-xs uppercase tracking-widest text-slate-400">AccessRoute</p><h1 class="mt-1 text-xl font-bold">Kamera & Analiz</h1></div>' +
               '<div class="text-right"><span class="rounded-full bg-blue-500/20 px-3 py-1 text-xs font-bold text-blue-300">Canlı AR</span></div>' +
             '</div>' +
-            
-            // Kamera ve Su Terazisi Alanı
             '<div class="camera-shell">' +
               '<video id="cameraVideo" class="camera-video" autoplay playsinline muted></video>' +
               '<canvas id="overlayCanvas" class="overlay-canvas"></canvas>' +
@@ -125,14 +112,10 @@
               '</div>' +
               (state.cameraError ? '<div class="absolute inset-0 flex items-center justify-center bg-slate-900/90 p-4 text-center text-rose-400">' + state.cameraError + '</div>' : '') +
             '</div>' +
-            
-            // Basit Sensör Yorumu
             '<div class="rounded-2xl bg-white p-3 text-slate-900 shadow-lg">' +
               '<p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Hızlı Sensör Yorumu</p>' +
               '<p class="mt-1 text-sm font-semibold">' + state.aiInsight + '</p>' +
             '</div>' +
-            
-            // Dev Gemini Butonu
             '<button data-action="ask-gemini" class="focus-ring mt-2 w-full rounded-2xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-4 text-lg font-bold text-white shadow-xl hover:from-violet-500 hover:to-blue-500 active:scale-95 transition-all flex items-center justify-center gap-2">' +
               '<span>✨</span> Engeli Analiz Et (Yapay Zeka)' +
             '</button>' +
@@ -141,7 +124,6 @@
         }
 
         function renderTopluluk() {
-          // Topluluk render kodunu şimdilik kısa tutuyoruz, öncekiyle aynı mantık
           return '<section class="space-y-3"><h2 class="text-xl font-bold">Topluluk Bildirimleri</h2><p class="text-sm text-slate-400">Yakınınızdaki güncel engeller...</p></section>';
         }
 
@@ -243,7 +225,6 @@
 
           ctx.clearRect(0, 0, w, h);
 
-          // Eğim Çizgisi (Su Terazisi)
           const centerY = h / 2 + state.gamma * 3; 
           const margin = 40;
           ctx.lineWidth = 6;
@@ -253,19 +234,16 @@
           ctx.lineTo(w - margin, centerY);
           ctx.stroke();
 
-          // Ortadaki yuvarlak
           ctx.beginPath();
           ctx.fillStyle = state.statusColor;
           ctx.arc(w / 2, centerY, 10, 0, Math.PI * 2);
           ctx.fill();
 
-          // Üstteki Yüzde Yazısı Arka Planı
           ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
           ctx.beginPath();
           ctx.roundRect(w/2 - 120, 20, 240, 50, 12);
           ctx.fill();
 
-          // Yüzde Yazısı
           ctx.fillStyle = "#ffffff";
           ctx.font = "bold 22px Inter, sans-serif";
           ctx.textAlign = "center";
@@ -303,14 +281,12 @@
           state.cameraReady = false;
         }
 
-        // --- GEMINI API ÇAĞRISI ---
         async function runGeminiAnalysis() {
           if (!state.cameraReady) {
             alert("Önce kameranın açılması gerekiyor.");
             return;
           }
 
-          // 1. Ekranı dondur ve fotoğrafı çek
           const video = document.getElementById("cameraVideo");
           const canvas = document.createElement("canvas");
           canvas.width = video.videoWidth;
@@ -318,36 +294,25 @@
           const ctx = canvas.getContext("2d");
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
           
-          // Base64 formatına çevir (Sadece data kısmı lazım)
           const base64Image = canvas.toDataURL("image/jpeg").split(',')[1];
 
-          // 2. Modalı Yükleniyor durumunda aç
           state.showModal = true;
           state.geminiLoading = true;
           state.geminiResult = "";
           render();
 
-          // 3. Prompt (Yapay Zekaya ne soracağız?)
           const prompt = "Sen uzman bir erişilebilirlik asistanısın. Bu görseldeki alanı tekerlekli sandalye kullanan veya görme engelli bir birey için analiz et. Eğer bir rampa, merdiven, çukur veya engel varsa detaylıca ama kısa ve samimi bir dille açıkla. Geçiş güvenli mi, riskli mi belirt.";
 
-          // 4. API'ye Gönder
           try {
             if (!GEMINI_API_KEY || GEMINI_API_KEY === "") {
-              // API Key yoksa test simülasyonu yap
-              await new Promise(r => setTimeout(r, 2000)); // 2 saniye bekle
+              await new Promise(r => setTimeout(r, 2000)); 
               state.geminiResult = "⚠️ Simülasyon Modu: Proje kodunun içine gerçek API anahtarınızı girmediğiniz için bu örnek bir cevaptır. Ancak görseldeki rampa şu anlık engelli geçişi için oldukça dik ve riskli görünüyor.";
             } else {
-              // Gerçek API İsteği
               const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  contents: [{
-                    parts: [
-                      { text: prompt },
-                      { inline_data: { mime_type: "image/jpeg", data: base64Image } }
-                    ]
-                  }]
+                  contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: "image/jpeg", data: base64Image } }] }]
                 })
               });
               const data = await response.json();
@@ -358,17 +323,14 @@
             state.geminiResult = "Bağlantı hatası oluştu veya API limiti doldu. Detay: " + error.message;
           }
 
-          // 5. Sonucu Ekrana Bas
           state.geminiLoading = false;
           render();
           
-          // Görme engelli modundaysa hemen oku
           if (state.profile === "gorme" && state.geminiResult) {
             speak(state.geminiResult);
           }
         }
 
-        // --- TIKLAMA OLAYLARI (EVENTS) ---
         app.addEventListener("click", function (event) {
           const btn = event.target.closest("[data-action]");
           if (!btn) return;
@@ -387,9 +349,22 @@
           }
 
           if (action === "close-modal") {
-            if (state.geminiLoading) return; // Yüklenirken kapatılamasın
+            if (state.geminiLoading) return;
             state.showModal = false;
-            if (window.speechSynthesis) window.speechSynthesis.cancel(); // Sesi sustur
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
             render();
-      
-          
+          }
+
+          if (action === "replay-gemini") {
+            speak(state.geminiResult);
+          }
+        });
+
+        // İŞTE BİR ÖNCEKİ KOPYALAMADA KOPAN HAYATİ KISIM BURASIYDI!
+        render();
+        startScan();
+        drawOverlay();
+      })();
+    </script>
+  </body>
+</html>
