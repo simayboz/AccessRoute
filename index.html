@@ -11,15 +11,25 @@
         .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         .camera-box { position: relative; border-radius: 24px; overflow: hidden; height: 300px; background: #020617; }
         #cameraVideo { width: 100%; height: 100%; object-fit: cover; }
-        .comment-photo { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+        .comment-photo { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; cursor: pointer; }
         .star-rating { direction: rtl; display: inline-flex; }
         .star-rating input { display: none; }
         .star-rating label { color: #475569; font-size: 2rem; padding: 0 0.1rem; cursor: pointer; transition: color 0.2s; }
         .star-rating label:hover, .star-rating label:hover ~ label, .star-rating input:checked ~ label { color: #fbbf24; }
+        
+        /* Tam Ekran Fotoğraf Overlay Stili */
+        #fullscreenOverlay { position: fixed; inset: 0; background-color: rgba(2, 6, 23, 0.98); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(20px); cursor: pointer; }
+        #fullscreenOverlay img { max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 12px; box-shadow: 0 0 50px rgba(189, 30, 45, 0.3); }
+        #fullscreenOverlay.active { display: flex; }
     </style>
 </head>
 <body class="text-slate-100">
     <main id="app" class="mx-auto min-h-screen w-full max-w-md px-4 pt-4"></main>
+    
+    <div id="fullscreenOverlay" onclick="closeFullscreen()">
+        <img id="fullscreenImage" src="" alt="Tam Ekran Görüntü">
+        <span class="absolute top-6 right-6 text-white text-3xl font-black">&times;</span>
+    </div>
 
     <script>
         (function () {
@@ -27,7 +37,6 @@
             let GEMINI_API_KEY = localStorage.getItem("gemini_api_key");
             const savedComments = localStorage.getItem("iyte_comments");
             
-            // KONUMLAR GÜNCELLENDİ: Eskiler korundu, yeniler eklendi
             const IYTE_LOCATIONS = [
                 { id: "lib", title: "Kütüphane Rampası" },
                 { id: "cafe", title: "Yemekhane Girişi" },
@@ -49,7 +58,6 @@
                 { id: "muh_malzeme", title: "Malzeme Bilimi ve Mühendisliği" }
             ];
 
-            // Eğer hafızada yorum yoksa Zülal ve Ahmet'in varsayılan yorumlarını göster
             const INITIAL_COMMENTS = savedComments ? JSON.parse(savedComments) : [
                 { id: "c1", locId: "chem", user: "Zülal Y.", photo: "https://images.unsplash.com/photo-1618510050511-62778523318f?q=80&w=400", rating: 2, text: "Çok dik, tekerlekli sandalye ile tek başıma çıkamadım.", date: "18 Mart 2026" },
                 { id: "c2", locId: "cafe", user: "Ahmet K.", photo: "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=400", rating: 4, text: "Rampa güzel ama kapı ağır, yardım gerekebilir.", date: "19 Mart 2026" }
@@ -62,6 +70,22 @@
             };
 
             const app = document.getElementById("app");
+            const fullscreenOverlay = document.getElementById("fullscreenOverlay");
+            const fullscreenImage = document.getElementById("fullscreenImage");
+
+            // Tam Ekran Fonksiyonları (Global Alanda Kalmalılar)
+            window.openFullscreen = function (imageSrc) {
+                if (!imageSrc) return;
+                fullscreenImage.src = imageSrc;
+                fullscreenOverlay.classList.add("active");
+                document.body.style.overflow = "hidden"; // Kaydırmayı kapat
+            }
+
+            window.closeFullscreen = function () {
+                fullscreenOverlay.classList.remove("active");
+                fullscreenImage.src = "";
+                document.body.style.overflow = "auto"; // Kaydırmayı aç
+            }
 
             function renderGiris() {
                 return `
@@ -80,6 +104,10 @@
             }
 
             function renderAnaliz() {
+                // Analiz kısmındaki fotoğraf için cursor-pointer ve openFullscreen ekledik
+                const imgClass = state.imageSource ? "w-full h-full object-cover cursor-pointer" : "";
+                const imgOnClick = state.imageSource ? `onclick="openFullscreen('${state.imageSource}')"` : "";
+
                 return `
                     <div class="space-y-4">
                         <div class="iyte-red rounded-3xl p-6 shadow-xl flex justify-between items-center">
@@ -94,7 +122,7 @@
                         </div>
                         <div class="camera-box shadow-2xl">
                             ${state.cameraActive ? '<video id="cameraVideo" autoplay playsinline muted></video>' : 
-                             (state.imageSource ? `<img src="${state.imageSource}" class="w-full h-full object-cover">` : 
+                             (state.imageSource ? `<img src="${state.imageSource}" class="${imgClass}" ${imgOnClick} alt="Analiz Görüntüsü">` : 
                              '<div class="flex items-center justify-center h-full text-slate-500 text-sm italic">Fotoğraf Çekin...</div>')}
                             ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-red-600 p-4 rounded-full text-2xl shadow-lg">📸</button>' : ''}
                         </div>
@@ -135,7 +163,8 @@
                         ${IYTE_LOCATIONS.map(loc => {
                             const locComments = state.comments.filter(c => c.locId === loc.id);
                             if (locComments.length === 0) return "";
-                            return `<div class="space-y-3"><h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md"><img src="${c.photo}" class="comment-photo border border-white/10"><div class="flex-1 space-y-1"><div class="flex justify-between items-center"><span class="font-bold text-sm text-slate-100">@${c.user}</span><span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p><div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div></div></div>`).join('')}</div>`;
+                            // Topluluk yorumlarındaki fotoğraflara openFullscreen ekledik
+                            return `<div class="space-y-3"><h3 class="font-bold text-red-400 text-sm pl-2 flex items-center gap-2">📍 ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-2xl p-4 flex gap-4 items-start shadow-md"><img src="${c.photo}" class="comment-photo border border-white/10" onclick="openFullscreen('${c.photo}')" alt="Kullanıcı Fotoğrafı"><div class="flex-1 space-y-1"><div class="flex justify-between items-center"><span class="font-bold text-sm text-slate-100">@${c.user}</span><span class="text-[10px] text-slate-500 bg-slate-800 px-2 py-1 rounded-md">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed py-1">${c.text}</p><div class="text-xs font-bold text-amber-400">${'⭐'.repeat(c.rating)}${'<span class="text-slate-600">★</span>'.repeat(5-c.rating)}</div></div></div>`).join('')}</div>`;
                         }).join('')}
                         </div>
                     </div>`;
@@ -204,11 +233,9 @@
                 const now = new Date();
                 const formattedDate = `${now.getDate()} ${["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran", "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"][now.getMonth()]} ${now.getFullYear()}`;
 
-                // YENİ YORUMU LİSTEYE EKLE VE HAFIZAYA KAYDET
                 const newComment = { id: "c" + Date.now(), locId, user: state.userName, photo, rating, text, date: formattedDate };
                 state.comments = [newComment, ...state.comments];
                 
-                // İŞTE BÜYÜCÜLÜK BURADA: TELEFONUN HAFIZASINA KAZIYORUZ
                 localStorage.setItem("iyte_comments", JSON.stringify(state.comments));
                 
                 state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0;
