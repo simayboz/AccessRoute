@@ -28,18 +28,54 @@
         { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
-    // Yeni ve daha kapsamlı bot yorumları
+    // --- 25 TANE ÖZEL SEÇİLMİŞ BOT YORUMU ---
     const STATIC_COMMENTS = [
-        { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Bölümün önündeki yokuş gerçekten çok dik. Tek başıma çıkmam mümkün olmadı.", date: "15 Mar 2026" },
-        { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kütüphaneye giriş çok rahat, asansörler ve rampalar standartlara uygun.", date: "16 Mar 2026" },
-        { locId: "cafe", user: "Melis", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 4, text: "Yemekhane girişi geniş ama kapılar biraz ağır, destek gerekebiliyor.", date: "17 Mar 2026" },
-        { locId: "fak_fen", user: "Arda", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 3, text: "Hissedilebilir yüzeyler bazı noktalarda kesiliyor, yenilenmesi iyi olur.", date: "18 Mar 2026" },
-        { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Mimarlık fakültesi girişindeki rampayı test ettim, gayet güvenli duruyor.", date: "19 Mar 2026" },
-        { locId: "muh_bilgisayar", user: "Berk", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Giriş rampası çok iyi ama laboratuvarlardaki masalar sandalye için biraz yüksek kalabiliyor.", date: "20 Mar 2026" },
-        { id: "opera_kafe", user: "Melih", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 3, text: "Bahçedeki taşlı zemin koltuk değneğiyle yürürken sarsıyor, düzeltilse süper olur.", date: "21 Mar 2026" },
-        { id: "hazirlik", user: "Kerem", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 5, text: "Sesli navigasyon desteği binalar arasında çok iyi çalışıyor, yönümü kolay buldum.", date: "21 Mar 2026" },
-        { id: "kyk_erkek", user: "Barış", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 2, text: "Giriş kapısı biraz dar, akülü sandalye ucu ucuna geçiyor. Genişletilmeli.", date: "20 Mar 2026" },
-        { id: "muh_insaat", user: "Deniz", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Asansör bazen arıza yapıyor, merdivenler çok dik. Asansör çalışırken sorun yok.", date: "19 Mar 2026" }
+        // Kimya Mühendisliği
+        { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Yokuş çok dik, kışın ıslakken tekerlekler kayıyor. Yanımda biri olmadan çıkmam imkansız.", date: "15 Mar 2026" },
+        { locId: "chem", user: "Caner", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Akülüyle çıkılıyor ama bataryayı çok zorluyor. Zemin biraz tırtıklı, sarsıyor.", date: "16 Mar 2026" },
+        
+        // Kütüphane
+        { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kampüsün en erişilebilir binası kesinlikle burası. Rampalar ve turnikeler çok uygun.", date: "16 Mar 2026" },
+        { locId: "lib", user: "Mert", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 4, text: "Hissedilebilir yüzeyler kütüphaneye kadar eksiksiz geliyor, asansörlerde sesli uyarı var.", date: "17 Mar 2026" },
+        { locId: "lib", user: "Selin", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 5, text: "Girişteki dinlenme alanları çok iyi düşünülmüş, yorulunca oturabiliyorsunuz.", date: "18 Mar 2026" },
+
+        // Yemekhane
+        { locId: "cafe", user: "Melis", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 3, text: "Rampa güzel ama kapılar o kadar ağır ki! Koltuk değneğiyle kapıyı açmak çok zor.", date: "17 Mar 2026" },
+        { locId: "cafe", user: "Burak", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Öğle saatlerinde çok kalabalık oluyor, manevra yapacak alan kalmıyor. Erken gelmek lazım.", date: "19 Mar 2026" },
+
+        // Köy Yokuşu
+        { locId: "koy_yokusu", user: "Deniz", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 1, text: "Burası bir engel parkuru gibi. Eğim standartların çok üstünde, kesinlikle destek lazım.", date: "15 Mar 2026" },
+        { locId: "koy_yokusu", user: "Ece", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Destekçi olarak bile arkadaşımı çıkarırken zorlandım, zemin çok pürüzlü.", date: "20 Mar 2026" },
+
+        // Hazırlık Binası
+        { locId: "hazirlik", user: "Oğuz", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Sınıfların girişi düzayak, asansör her kata çıkıyor. Sadece kantin kısmı biraz basık.", date: "14 Mar 2026" },
+        { locId: "hazirlik", user: "Ayşe", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 3, text: "Bina içindeki merdiven başlarında uyarıcı yüzeyler eksik, dikkatli yürümek gerekiyor.", date: "16 Mar 2026" },
+
+        // Fen Fakültesi
+        { locId: "fak_fen", user: "Arda", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 3, text: "Binalar arası geçişte sarı çizgiler kopuyor, yön bulmak zorlaşıyor.", date: "18 Mar 2026" },
+        { locId: "fak_fen", user: "Gizem", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Bloklar arasındaki bağlantı yolları çok dar, karşıdan biri gelince geçilmiyor.", date: "21 Mar 2026" },
+
+        // Mimarlık Fakültesi
+        { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Stüdyoların olduğu kısımlar erişilebilir ama bazı maket odalarına giriş eşikli.", date: "19 Mar 2026" },
+        { locId: "fak_mimarlik", user: "Kaan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 5, text: "Tasarım binası olduğu için mi bilmiyorum ama rampaların açısı çok rahat.", date: "20 Mar 2026" },
+
+        // KYK Yurtları
+        { locId: "kyk_kiz", user: "Derya", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Odalardaki banyo eşikleri biraz yüksek, sandalyeyle girmek için teknik lazım.", date: "18 Mar 2026" },
+        { locId: "kyk_erkek", user: "Emre", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Yurdun girişindeki rampa genişletilmiş, akülüyle girmek artık çok daha kolay.", date: "21 Mar 2026" },
+
+        // Mühendislik Binaları
+        { locId: "muh_bilgisayar", user: "Cem", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Lablara giriş sorunsuz. Sadece masaların altı bazen sandalyenin sığması için dar kalıyor.", date: "21 Mar 2026" },
+        { locId: "muh_insaat", user: "Taylan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 2, text: "Bina çok eski, merdivenler yüksek ve korkuluklar bazen sallanıyor. Güven vermiyor.", date: "19 Mar 2026" },
+        { locId: "muh_elektronik", user: "İrem", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 5, text: "Zemin dokusu çok net, bastonla takibi çok kolay bir bina.", date: "20 Mar 2026" },
+        { locId: "muh_gida", user: "Yaren", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Giriş katı tamamen erişilebilir. Üst katlara çıkarken asansör kartı istemeleri biraz yorucu.", date: "17 Mar 2026" },
+
+        // Opera Kafe
+        { locId: "opera_kafe", user: "Melih", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 3, text: "Bahçedeki çakıl taşlı alan yürümeyi zorlaştırıyor, beton kısımdan ayrılmamak lazım.", date: "21 Mar 2026" },
+        
+        // Ekstra Çeşitlilik
+        { locId: "muh_makine", user: "Serdar", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Atölye girişleri düzayak ama içerideki makineler arası mesafe tekerlekli sandalye için dar.", date: "15 Mar 2026" },
+        { locId: "muh_biyomuhendislik", user: "Aslı", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 5, text: "Bina yeni olduğu için her yer jilet gibi erişilebilir yapılmış. Çok rahat ettim.", date: "21 Mar 2026" },
+        { locId: "muh_cevre", user: "Gökhan", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Binanın konumu biraz yokuşta kalsa da bina içi erişilebilirlik gayet iyi.", date: "19 Mar 2026" }
     ];
 
     const state = {
@@ -58,6 +94,23 @@
         if (state.tab === "topluluk") render(); 
     });
 
+    // --- YARDIMCI FONKSİYONLAR ---
+    async function resizeImage(base64Str, maxWidth = 800) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width; let height = img.height;
+                if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
+                canvas.width = width; canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7));
+            };
+        });
+    }
+
     function getProfileBadge(profile) {
         const badges = {
             "Manuel Tekerlekli Sandalye": { style: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: "ph-wheelchair" },
@@ -71,72 +124,22 @@
         return `<span class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border ${badge.style}"><i class="ph-fill ${badge.icon}"></i> ${profile}</span>`;
     }
 
-    // Geri kalan render ve işlev fonksiyonları (Önceki kodun aynısı)
+    // --- RENDER FONKSİYONLARI ---
     function renderGiris() {
-        return `
-            <div class="flex flex-col items-center justify-center h-screen space-y-6 text-center px-6 animate-fade-in -mt-4">
-                <div class="relative w-28 h-28 mb-2"><div class="absolute inset-0 bg-red-600 rounded-full blur-2xl opacity-20"></div><img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="relative z-10 w-full h-full drop-shadow-2xl"></div>
-                <div class="iyte-red p-6 rounded-[2rem] shadow-2xl w-full max-w-xs border border-white/10">
-                    <h1 class="text-3xl font-black text-white tracking-wide">Access<span class="text-red-200">Route</span></h1>
-                    <p class="text-xs text-red-100/80 mt-2 font-medium tracking-widest uppercase">İYTE Engelsiz Kampüs</p>
-                </div>
-                <div class="w-full max-w-xs space-y-3">
-                    <input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-white shadow-inner">
-                    <select id="userProfileInput" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-slate-200 appearance-none [&>option]:bg-slate-900 shadow-inner">
-                        <option value="Belirtilmedi" ${state.userProfile === 'Belirtilmedi' ? 'selected' : ''}>Hareketlilik Tercihi (İsteğe Bağlı)</option>
-                        <option value="Manuel Tekerlekli Sandalye" ${state.userProfile === 'Manuel Tekerlekli Sandalye' ? 'selected' : ''}>Manuel Tekerlekli Sandalye</option>
-                        <option value="Akülü Tekerlekli Sandalye" ${state.userProfile === 'Akülü Tekerlekli Sandalye' ? 'selected' : ''}>Akülü Tekerlekli Sandalye</option>
-                        <option value="Koltuk Değneği veya Yürüteç" ${state.userProfile === 'Koltuk Değneği veya Yürüteç' ? 'selected' : ''}>Koltuk Değneği / Yürüteç</option>
-                        <option value="Beyaz Baston (Görme Desteği)" ${state.userProfile === 'Beyaz Baston (Görme Desteği)' ? 'selected' : ''}>Beyaz Baston / Görme Desteği</option>
-                        <option value="Fiziksel Destek İhtiyacı Yok" ${state.userProfile === 'Fiziksel Destek İhtiyacı Yok' ? 'selected' : ''}>Fiziksel Destek İhtiyacım Yok</option>
-                    </select>
-                    ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-emerald-400">` : `<div class="glass py-3 px-4 rounded-2xl flex justify-between items-center"><span class="text-xs text-emerald-400 font-medium">✅ API Hazır</span><button data-action="reset-key" class="text-[10px] text-rose-400 font-bold underline">Değiştir</button></div>`}
-                    <button data-action="submit-login" class="w-full iyte-red py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform text-base mt-4">Uygulamaya Başla</button>
-                </div>
-            </div>`;
+        return `<div class="flex flex-col items-center justify-center h-screen space-y-6 text-center px-6 animate-fade-in -mt-4"><div class="relative w-28 h-28 mb-2"><div class="absolute inset-0 bg-red-600 rounded-full blur-2xl opacity-20"></div><img src="https://upload.wikimedia.org/wikipedia/tr/0/08/Izmir_Yuksek_Teknoloji_Enstitusu_Logo.png" class="relative z-10 w-full h-full drop-shadow-2xl"></div><div class="iyte-red p-6 rounded-[2rem] shadow-2xl w-full max-w-xs border border-white/10"><h1 class="text-3xl font-black text-white tracking-wide">Access<span class="text-red-200">Route</span></h1><p class="text-xs text-red-100/80 mt-2 font-medium tracking-widest uppercase">İYTE Engelsiz Kampüs</p></div><div class="w-full max-w-xs space-y-3"><input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-white shadow-inner"><select id="userProfileInput" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-slate-200 appearance-none [&>option]:bg-slate-900 shadow-inner"><option value="Belirtilmedi" ${state.userProfile === 'Belirtilmedi' ? 'selected' : ''}>Hareketlilik Tercihi (İsteğe Bağlı)</option><option value="Manuel Tekerlekli Sandalye" ${state.userProfile === 'Manuel Tekerlekli Sandalye' ? 'selected' : ''}>Manuel Tekerlekli Sandalye</option><option value="Akülü Tekerlekli Sandalye" ${state.userProfile === 'Akülü Tekerlekli Sandalye' ? 'selected' : ''}>Akülü Tekerlekli Sandalye</option><option value="Koltuk Değneği veya Yürüteç" ${state.userProfile === 'Koltuk Değneği veya Yürüteç' ? 'selected' : ''}>Koltuk Değneği / Yürüteç</option><option value="Beyaz Baston (Görme Desteği)" ${state.userProfile === 'Beyaz Baston (Görme Desteği)' ? 'selected' : ''}>Beyaz Baston / Görme Desteği</option><option value="Fiziksel Destek İhtiyacı Yok" ${state.userProfile === 'Fiziksel Destek İhtiyacı Yok' ? 'selected' : ''}>Fiziksel Destek İhtiyacım Yok</option></select>${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-emerald-400">` : `<div class="glass py-3 px-4 rounded-2xl flex justify-between items-center"><span class="text-xs text-emerald-400 font-medium">✅ API Hazır</span><button data-action="reset-key" class="text-[10px] text-rose-400 font-bold underline">Değiştir</button></div>`}<button data-action="submit-login" class="w-full iyte-red py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform text-base mt-4">Uygulamaya Başla</button></div></div>`;
     }
 
     function renderAnaliz() {
         const imgClass = state.imageSource ? "w-full h-full object-cover cursor-pointer" : "";
-        return `
-            <div class="space-y-4 px-3 pt-6 animate-fade-in pb-8">
-                <div class="glass rounded-3xl p-5 shadow-xl border border-white/10"><h1 class="text-xl font-bold tracking-wide flex items-center gap-2 text-white"><i class="ph-fill ph-scan text-red-500"></i> Analiz Modu</h1><p class="text-[10px] text-slate-400 mt-1">Hoş geldin, <span class="text-white">${state.userName}</span></p></div>
-                <div class="glass rounded-2xl p-1 relative"><select id="locSelect" class="w-full bg-transparent border-none py-3 px-4 text-sm outline-none text-white appearance-none [&>option]:bg-slate-900"><option value="">Analiz için konum seçin...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}</select></div>
-                <div class="camera-box shadow-2xl relative">
-                    ${state.cameraActive ? '<video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>' : (state.imageSource ? `<img src="${state.imageSource}" class="${imgClass}" data-action="open-fullscreen" data-src="${state.imageSource}">` : '<div class="flex flex-col items-center justify-center h-full text-slate-500 text-xs italic"><i class="ph ph-camera text-4xl mb-2"></i>Fotoğraf Bekleniyor</div>')}
-                    ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white text-red-600 w-16 h-16 rounded-full text-2xl shadow-xl flex items-center justify-center"><i class="ph-fill ph-camera"></i></button>' : ''}
-                </div>
-                <div class="grid grid-cols-2 gap-3"><button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-xl py-3.5 text-xs font-bold text-white uppercase tracking-wider">${state.cameraActive?'Kapat':'Kamerayı Aç'}</button><label class="glass rounded-xl py-3.5 text-xs font-bold text-white uppercase tracking-wider text-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label></div>
-                <input type="text" id="customQuestionInput" value="${state.customQuestion}" placeholder="Yapay zekaya özel bir sorun var mı?" class="w-full bg-black/20 border border-white/5 rounded-2xl py-4 px-4 text-xs outline-none text-slate-200 focus:border-red-500/50">
-                <button data-action="run-ai" class="w-full iyte-red py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform uppercase tracking-widest text-sm">✨ AI Analizi Başlat</button>
-            </div>`;
+        return `<div class="space-y-4 px-3 pt-6 animate-fade-in pb-8"><div class="glass rounded-3xl p-5 shadow-xl border border-white/10"><h1 class="text-xl font-bold tracking-wide flex items-center gap-2 text-white"><i class="ph-fill ph-scan text-red-500"></i> Analiz Modu</h1><p class="text-[10px] text-slate-400 mt-1">Hoş geldin, <span class="text-white">${state.userName}</span></p></div><div class="glass rounded-2xl p-1 relative"><select id="locSelect" class="w-full bg-transparent border-none py-3 px-4 text-sm outline-none text-white appearance-none [&>option]:bg-slate-900"><option value="">Analiz için konum seçin...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}</select></div><div class="camera-box shadow-2xl relative">${state.cameraActive ? '<video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>' : (state.imageSource ? `<img src="${state.imageSource}" class="${imgClass}" data-action="open-fullscreen" data-src="${state.imageSource}">` : '<div class="flex flex-col items-center justify-center h-full text-slate-500 text-xs italic"><i class="ph ph-camera text-4xl mb-2"></i>Fotoğraf Bekleniyor</div>')}${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white text-red-600 w-16 h-16 rounded-full text-2xl shadow-xl flex items-center justify-center"><i class="ph-fill ph-camera"></i></button>' : ''}</div><div class="grid grid-cols-2 gap-3"><button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-xl py-3.5 text-xs font-bold text-white uppercase tracking-wider">${state.cameraActive?'Kapat':'Kamerayı Aç'}</button><label class="glass rounded-xl py-3.5 text-xs font-bold text-white uppercase tracking-wider text-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label></div><input type="text" id="customQuestionInput" value="${state.customQuestion}" placeholder="Yapay zekaya özel bir sorun var mı?" class="w-full bg-black/20 border border-white/5 rounded-2xl py-4 px-4 text-xs outline-none text-slate-200 focus:border-red-500/50"><button data-action="run-ai" class="w-full iyte-red py-4 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform uppercase tracking-widest text-sm">✨ AI Analizi Başlat</button></div>`;
     }
 
     function renderTopluluk() {
-        return `
-            <div class="space-y-6 pt-6 px-3 animate-fade-in pb-24">
-                <h2 class="text-xl font-bold flex items-center gap-2 text-white"><i class="ph-fill ph-users-three text-red-500"></i> Kampüs Sesi</h2>
-                <div class="glass rounded-[2rem] p-5 shadow-2xl border border-white/5">
-                    <div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full iyte-red flex items-center justify-center font-bold text-sm">${state.userName.substring(0,2).toUpperCase()}</div><span class="text-sm font-semibold text-white">Deneyimini Paylaş</span></div>
-                    <div class="space-y-3">
-                        <select id="newLocSelect" class="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-xs text-white appearance-none [&>option]:bg-slate-900"><option value="">Konum Seç...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}</select>
-                        <div class="flex gap-3"><label class="border-2 border-dashed border-slate-600 rounded-2xl w-20 h-24 flex flex-col items-center justify-center cursor-pointer overflow-hidden shrink-0">${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover">` : '<i class="ph ph-camera text-xl text-slate-500"></i><span class="text-[8px] mt-1 text-slate-500">Fotoğraf</span>'}<input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput"></label><textarea id="newCommentText" class="flex-1 bg-black/20 border border-white/10 rounded-2xl p-3 text-xs outline-none resize-none text-white placeholder-slate-500" placeholder="Erişilebilirlik hakkında ne düşünüyorsun?"></textarea></div>
-                        <div class="flex items-center justify-between mt-2">
-                            <div class="star-rating">
-                                <input type="radio" id="star5" name="rating" value="5" /><label for="star5" class="ph-fill ph-star"></label><input type="radio" id="star4" name="rating" value="4" /><label for="star4" class="ph-fill ph-star"></label><input type="radio" id="star3" name="rating" value="3" /><label for="star3" class="ph-fill ph-star"></label><input type="radio" id="star2" name="rating" value="2" /><label for="star2" class="ph-fill ph-star"></label><input type="radio" id="star1" name="rating" value="1" /><label for="star1" class="ph-fill ph-star"></label>
-                            </div>
-                            <button data-action="add-new-comment" class="bg-white text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs active:scale-95 transition-transform">Gönder</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                ${IYTE_LOCATIONS.map(loc => {
-                    const locComments = state.comments.filter(c => c.locId === loc.id);
-                    if (locComments.length === 0) return "";
-                    return `<div class="space-y-3"><h3 class="font-bold text-white text-sm pl-2 flex items-center gap-2"><div class="w-1 h-3 bg-red-500 rounded-full"></div> ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-[1.5rem] p-4 flex gap-4 items-start shadow-md border border-white/5 animate-fade-in">${c.photo ? `<img src="${c.photo}" class="w-20 h-24 object-cover rounded-xl border border-white/10 cursor-pointer" data-action="open-fullscreen" data-src="${c.photo}">` : `<div class="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5"><i class="ph-fill ph-chat-circle-dots text-slate-600 text-2xl"></i></div>`}<div class="flex-1 space-y-1 min-w-0"><div class="flex justify-between items-center"><div class="flex flex-col gap-1 truncate"><span class="font-bold text-sm text-white truncate">@${c.user}</span>${getProfileBadge(c.profile)}</div><span class="text-[9px] text-slate-500 bg-black/20 px-2 py-1 rounded-md shrink-0">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed pt-1">${c.text}</p><div class="text-[10px] text-amber-400 font-bold">${'⭐'.repeat(c.rating)}</div></div></div>`).join('')}</div>`;
-                }).join('')}
-                </div>
-            </div>`;
+        return `<div class="space-y-6 pt-6 px-3 animate-fade-in pb-24"><h2 class="text-xl font-bold flex items-center gap-2 text-white"><i class="ph-fill ph-users-three text-red-500"></i> Kampüs Sesi</h2><div class="glass rounded-[2rem] p-5 shadow-2xl border border-white/5"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full iyte-red flex items-center justify-center font-bold text-sm">${state.userName.substring(0,2).toUpperCase()}</div><span class="text-sm font-semibold text-white">Deneyimini Paylaş</span></div><div class="space-y-3"><select id="newLocSelect" class="w-full bg-black/20 border border-white/10 rounded-xl py-3 px-4 text-xs text-white appearance-none [&>option]:bg-slate-900"><option value="">Konum Seç...</option>${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}</select><div class="flex gap-3"><label class="border-2 border-dashed border-slate-600 rounded-2xl w-20 h-24 flex flex-col items-center justify-center cursor-pointer overflow-hidden shrink-0">${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover">` : '<i class="ph ph-camera text-xl text-slate-500"></i><span class="text-[8px] mt-1 text-slate-500">Fotoğraf</span>'}<input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput"></label><textarea id="newCommentText" class="flex-1 bg-black/20 border border-white/10 rounded-2xl p-3 text-xs outline-none resize-none text-white placeholder-slate-500" placeholder="Erişilebilirlik hakkında ne düşünüyorsun?"></textarea></div><div class="flex items-center justify-between mt-2"><div class="star-rating"><input type="radio" id="star5" name="rating" value="5" /><label for="star5" class="ph-fill ph-star"></label><input type="radio" id="star4" name="rating" value="4" /><label for="star4" class="ph-fill ph-star"></label><input type="radio" id="star3" name="rating" value="3" /><label for="star3" class="ph-fill ph-star"></label><input type="radio" id="star2" name="rating" value="2" /><label for="star2" class="ph-fill ph-star"></label><input type="radio" id="star1" name="rating" value="1" /><label for="star1" class="ph-fill ph-star"></label></div><button data-action="add-new-comment" class="bg-white text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs active:scale-95 transition-transform">Gönder</button></div></div></div><div class="space-y-6">${IYTE_LOCATIONS.map(loc => {
+            const locComments = state.comments.filter(c => c.locId === loc.id);
+            if (locComments.length === 0) return "";
+            return `<div class="space-y-3"><h3 class="font-bold text-white text-sm pl-2 flex items-center gap-2"><div class="w-1 h-3 bg-red-500 rounded-full"></div> ${loc.title}</h3>${locComments.map(c => `<div class="glass rounded-[1.5rem] p-4 flex gap-4 items-start shadow-md border border-white/5 animate-fade-in">${c.photo ? `<img src="${c.photo}" class="w-20 h-24 object-cover rounded-xl border border-white/10 cursor-pointer" data-action="open-fullscreen" data-src="${c.photo}">` : `<div class="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-white/5"><i class="ph-fill ph-chat-circle-dots text-slate-600 text-2xl"></i></div>`}<div class="flex-1 space-y-1 min-w-0"><div class="flex justify-between items-center"><div class="flex flex-col gap-1 truncate"><span class="font-bold text-sm text-white truncate">@${c.user}</span>${getProfileBadge(c.profile)}</div><span class="text-[9px] text-slate-500 bg-black/20 px-2 py-1 rounded-md shrink-0">${c.date}</span></div><p class="text-xs text-slate-300 leading-relaxed pt-1">${c.text}</p><div class="text-[10px] text-amber-400 font-bold">${'⭐'.repeat(c.rating)}</div></div></div>`).join('')}</div>`;
+        }).join('')}</div></div>`;
     }
 
     function renderModal() {
@@ -155,6 +158,7 @@
         return `<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[380px] glass rounded-2xl p-2 flex justify-around shadow-2xl z-50 border border-white/10">${tabs.map(t => `<button data-action="tab" data-id="${t.id}" class="flex-1 py-2 rounded-xl ${state.tab===t.id?'bg-white/10 text-white':'text-slate-500'} flex flex-col items-center gap-1 transition-all"><i class="${t.icon} text-2xl"></i><span class="text-[9px] font-bold uppercase tracking-widest">${t.label}</span></button>`).join('')}</nav>`;
     }
 
+    // --- İŞLEVLER VE OLAYLAR ---
     function render() {
         let content = state.tab === "giris" ? renderGiris() : (state.tab === "analiz" ? renderAnaliz() : renderTopluluk());
         app.innerHTML = content + renderModal() + renderFullscreenImage() + renderTabBar();
@@ -167,27 +171,6 @@
             try { window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); v.srcObject = window.stream; } 
             catch (e) { alert("Kamera hatası!"); state.cameraActive = false; render(); }
         }
-    }
-
-    async function resizeImage(base64Str, maxWidth = 800) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = base64Str;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-        });
     }
 
     async function runAI() {
@@ -219,8 +202,7 @@
         const rating = state.newCommentRating;
         const photo = state.newCommentPhoto;
         if (!locId || !text || rating === 0) return alert("Eksik bilgi!");
-        let finalPhoto = "";
-        if (photo) finalPhoto = await resizeImage(photo, 600);
+        let finalPhoto = ""; if (photo) finalPhoto = await resizeImage(photo, 600);
         const now = new Date();
         const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
         db.collection("comments").add({ locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
@@ -228,8 +210,7 @@
     }
 
     app.addEventListener("click", e => {
-        const btn = e.target.closest("[data-action]");
-        if (!btn) return;
+        const btn = e.target.closest("[data-action]"); if (!btn) return;
         const act = btn.dataset.action;
         if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = null; render(); }
         if (act === "submit-login") {
