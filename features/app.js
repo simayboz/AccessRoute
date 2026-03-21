@@ -105,7 +105,7 @@
         return `<div class="flex flex-col items-center justify-center h-screen space-y-8 text-center px-6 animate-fade-in bg-slate-900 -mt-4">
             <div class="relative w-36 h-36 mb-2">
                 <div class="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-20"></div>
-                <img src="https://upload.wikimedia.org/wikipedia/tr/b/b8/%C4%B0zmir_Y%C3%BCksek_Teknoloji_Enstit%C3%BCs%C3%BC_logosu.png" class="relative z-10 w-full h-full drop-shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1611095788915-d72b260909e7?q=80&w=600&auto=format&fit=crop" class="relative z-10 w-full h-full rounded-full object-cover border-4 border-red-600/50 shadow-2xl shadow-red-600/20">
             </div>
             <div class="space-y-2">
                 <h1 class="text-4xl font-black text-white tracking-wide">Access<span class="text-red-500">Route</span></h1>
