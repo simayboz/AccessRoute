@@ -45,7 +45,7 @@
         { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Stüdyoların olduğu kısımlar erişilebilir ama bazı maket odalarına giriş eşikli.", date: "19 Mar 2026" },
         { locId: "fak_mimarlik", user: "Kaan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 5, text: "Tasarım binası olduğu için mi bilmiyorum ama rampaların açısı çok rahat.", date: "20 Mar 2026" },
         { locId: "kyk_kiz", user: "Derya", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Odalardaki banyo eşikleri biraz yüksek, sandalyeyle girmek için teknik lazım.", date: "18 Mar 2026" },
-        { locId: "kyk_erkek", user: "Emre", profile: "Akülü Tekerlekli Sandalye", photo: "https://upload.wikimedia.org/wikipedia/tr/b/b8/%C4%B0zmir_Y%C3%BCksek_Teknoloji_Enstit%C3%BCs%C3%BC_logosu.png", rating: 4, text: "Yurdun girişindeki rampa genişletilmiş, akülüyle girmek artık çok daha kolay.", date: "21 Mar 2026" },
+        { locId: "kyk_erkek", user: "Emre", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 4, text: "Yurdun girişindeki rampa genişletilmiş, akülüyle girmek artık çok daha kolay.", date: "21 Mar 2026" },
         { locId: "muh_bilgisayar", user: "Cem", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Lablara giriş sorunsuz. Sadece masaların altı bazen sandalyenin sığması için dar kalıyor.", date: "21 Mar 2026" },
         { locId: "muh_insaat", user: "Taylan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 2, text: "Bina çok eski, merdivenler yüksek ve korkuluklar bazen sallanıyor. Güven vermiyor.", date: "19 Mar 2026" },
         { locId: "muh_elektronik", user: "İrem", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 5, text: "Zemin dokusu çok net, bastonla takibi çok kolay bir bina.", date: "20 Mar 2026" },
@@ -102,18 +102,23 @@
     }
 
     function renderGiris() {
-        return `<div class="flex flex-col items-center justify-center h-screen space-y-8 text-center px-6 animate-fade-in bg-slate-900 -mt-4">
-            <div class="relative w-36 h-36 mb-2">
-                <div class="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-20"></div>
-                <img src="https://images.unsplash.com/photo-1611095788915-d72b260909e7?q=80&w=600&auto=format&fit=crop" class="relative z-10 w-full h-full rounded-full object-cover border-4 border-red-600/50 shadow-2xl shadow-red-600/20">
+        return `<div class="flex flex-col items-center justify-center h-screen space-y-10 text-center px-10 animate-fade-in -mt-4 bg-transparent">
+            <div class="relative w-36 h-36 mb-4 flex items-center justify-center">
+                <div class="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-30"></div>
+                <div class="relative z-10 w-full h-full rounded-full bg-slate-900 flex flex-col items-center justify-center border-4 border-red-600/50 shadow-2xl shadow-red-600/20">
+                    <i class="ph-fill ph-map-pin text-6xl text-red-500"></i>
+                </div>
             </div>
-            <div class="space-y-2">
-                <h1 class="text-4xl font-black text-white tracking-wide">Access<span class="text-red-500">Route</span></h1>
-                <p class="text-xs text-slate-400 font-medium tracking-widest uppercase">İYTE Engelsiz Kampüs</p>
+            
+            <div class="space-y-3">
+                <h1 class="text-5xl font-extrabold text-white tracking-tighter">Access<span class="text-red-500">Route</span></h1>
+                <p class="text-sm text-slate-400 mt-2 font-medium tracking-wide">İYTE Engelsiz Kampüs Rehberi</p>
             </div>
+
             <div class="w-full max-w-sm space-y-4">
-                <input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-white shadow-inner transition-colors">
-                <select id="userProfileInput" class="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-slate-300 appearance-none [&>option]:bg-slate-900 shadow-inner transition-colors">
+                <input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-base outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/30 text-white shadow-inner transition">
+                
+                <select id="userProfileInput" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-base outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/30 text-slate-300 appearance-none [&>option]:bg-slate-950 shadow-inner transition">
                     <option value="Belirtilmedi" ${state.userProfile === 'Belirtilmedi' ? 'selected' : ''}>Hareketlilik Tercihi (İsteğe Bağlı)</option>
                     <option value="Manuel Tekerlekli Sandalye" ${state.userProfile === 'Manuel Tekerlekli Sandalye' ? 'selected' : ''}>Manuel Tekerlekli Sandalye</option>
                     <option value="Akülü Tekerlekli Sandalye" ${state.userProfile === 'Akülü Tekerlekli Sandalye' ? 'selected' : ''}>Akülü Tekerlekli Sandalye</option>
@@ -121,8 +126,10 @@
                     <option value="Beyaz Baston (Görme Desteği)" ${state.userProfile === 'Beyaz Baston (Görme Desteği)' ? 'selected' : ''}>Beyaz Baston / Görme Desteği</option>
                     <option value="Fiziksel Destek İhtiyacı Yok" ${state.userProfile === 'Fiziksel Destek İhtiyacı Yok' ? 'selected' : ''}>Fiziksel Destek İhtiyacım Yok</option>
                 </select>
-                ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key" class="w-full bg-slate-800 border border-slate-700 rounded-2xl py-4 px-6 text-sm outline-none focus:border-red-500 text-emerald-400 transition-colors">` : `<div class="bg-slate-800/50 py-3 px-4 rounded-2xl flex justify-between items-center border border-slate-700"><span class="text-xs text-emerald-400 font-medium">✅ API Hazır</span><button data-action="reset-key" class="text-[10px] text-rose-400 font-bold underline">Değiştir</button></div>`}
-                <button data-action="submit-login" class="w-full bg-red-600 hover:bg-red-700 py-4 rounded-2xl font-bold text-white shadow-lg shadow-red-600/20 active:scale-95 transition-all text-base mt-2">Uygulamaya Başla</button>
+                
+                ${!GEMINI_API_KEY ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-base outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/30 text-emerald-400 transition">` : `<div class="bg-slate-900/50 py-4 px-5 rounded-2xl flex justify-between items-center border border-slate-800"><span class="text-sm text-emerald-400 font-medium">✅ API Hazır</span><button data-action="reset-key" class="text-xs text-rose-400 font-bold underline">Değiştir</button></div>`}
+
+                <button data-action="submit-login" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-transform text-lg mt-6">Uygulamaya Başla</button>
             </div>
         </div>`;
     }
