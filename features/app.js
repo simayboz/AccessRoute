@@ -45,7 +45,7 @@
         { locId: "fak_mimarlik", user: "Selin", profile: "Fiziksel Destek İhtiyacı Yok", photo: "", rating: 4, text: "Stüdyoların olduğu kısımlar erişilebilir ama bazı maket odalarına giriş eşikli.", date: "19 Mar 2026" },
         { locId: "fak_mimarlik", user: "Kaan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 5, text: "Tasarım binası olduğu için mi bilmiyorum ama rampaların açısı çok rahat.", date: "20 Mar 2026" },
         { locId: "kyk_kiz", user: "Derya", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Odalardaki banyo eşikleri biraz yüksek, sandalyeyle girmek için teknik lazım.", date: "18 Mar 2026" },
-        { locId: "kyk_erkek", user: "Emre", profile: "Akülü Tekerlekli Sandalye", photo: "https://iyte.edu.tr/wp-content/uploads/2019/07/iyte_logo-tur.png", rating: 4, text: "Yurdun girişindeki rampa genişletilmiş, akülüyle girmek artık çok daha kolay.", date: "21 Mar 2026" },
+        { locId: "kyk_erkek", user: "Emre", profile: "Akülü Tekerlekli Sandalye", photo: "https://upload.wikimedia.org/wikipedia/tr/b/b8/%C4%B0zmir_Y%C3%BCksek_Teknoloji_Enstit%C3%BCs%C3%BC_logosu.png", rating: 4, text: "Yurdun girişindeki rampa genişletilmiş, akülüyle girmek artık çok daha kolay.", date: "21 Mar 2026" },
         { locId: "muh_bilgisayar", user: "Cem", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Lablara giriş sorunsuz. Sadece masaların altı bazen sandalyenin sığması için dar kalıyor.", date: "21 Mar 2026" },
         { locId: "muh_insaat", user: "Taylan", profile: "Koltuk Değneği veya Yürüteç", photo: "", rating: 2, text: "Bina çok eski, merdivenler yüksek ve korkuluklar bazen sallanıyor. Güven vermiyor.", date: "19 Mar 2026" },
         { locId: "muh_elektronik", user: "İrem", profile: "Beyaz Baston (Görme Desteği)", photo: "", rating: 5, text: "Zemin dokusu çok net, bastonla takibi çok kolay bir bina.", date: "20 Mar 2026" },
@@ -105,7 +105,7 @@
         return `<div class="flex flex-col items-center justify-center h-screen space-y-8 text-center px-6 animate-fade-in bg-slate-900 -mt-4">
             <div class="relative w-36 h-36 mb-2">
                 <div class="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-20"></div>
-                <img src="https://iyte.edu.tr/wp-content/uploads/2019/07/iyte_logo-tur.png" class="relative z-10 w-full h-full drop-shadow-2xl">
+                <img src="https://upload.wikimedia.org/wikipedia/tr/b/b8/%C4%B0zmir_Y%C3%BCksek_Teknoloji_Enstit%C3%BCs%C3%BC_logosu.png" class="relative z-10 w-full h-full drop-shadow-2xl">
             </div>
             <div class="space-y-2">
                 <h1 class="text-4xl font-black text-white tracking-wide">Access<span class="text-red-500">Route</span></h1>
