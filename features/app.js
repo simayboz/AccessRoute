@@ -124,14 +124,15 @@
         state.showModal = true; state.geminiLoading = true; render();
         
         const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
-        const prompt = `Sen bir kampüs erişilebilirlik uzmanısın. Konum: ${locInfo.title}, Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki fiziksel engelleri (rampa, basamak, zemin vb.) analiz et ve kısa tavsiyeler ver.`;
+        const prompt = `Sen bir kampüs erişilebilirlik uzmanısın. Konum: ${locInfo.title}, Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki fiziksel engelleri analiz et ve kısa tavsiyeler ver.`;
 
         try {
             const compressedImg = await resizeImage(state.imageSource, 800);
+            // Saf Base64 verisi (Lovable/Google uyumsuzluğunu gideren kritik satır)
             const base64Data = compressedImg.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
 
-            // v1beta hatasını çözen STABİL v1 ADRESİ:
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            // v1beta sürümü modelin en kararlı olduğu adrestir
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -148,7 +149,7 @@
 
             if (data.error) {
                 state.geminiResult = `<div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400">
-                    <p class="font-bold">❌ Google API Hatası:</p>
+                    <p class="font-bold">❌ Google Hatası:</p>
                     <p class="text-[10px] mt-1">${data.error.message}</p>
                 </div>`;
             } else if (data.candidates && data.candidates[0]) {
@@ -157,7 +158,7 @@
                 resultText = resultText.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
                 state.geminiResult = `<div class="space-y-1">${resultText}</div>`;
             } else {
-                state.geminiResult = "⚠️ Analiz yapılamadı. Farklı bir fotoğraf deneyin.";
+                state.geminiResult = "⚠️ Analiz yapılamadı. Lütfen tekrar deneyin.";
             }
         } catch (error) {
             state.geminiResult = `<p class="text-rose-400">❌ Sistem Hatası: ${error.message}</p>`;
@@ -183,7 +184,7 @@
 
     function renderFullscreenImage() {
         if (!state.fullscreenImgSrc) return "";
-        return `<div class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4" data-action="close-fullscreen"><img src="${state.fullscreenImgSrc}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/10"></div>`;
+        return `<div class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4" data-action="close-fullscreen"><img src="${state.fullscreenImgSrc}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl shadow-red-500/20"></div>`;
     }
 
     function render() {
@@ -198,6 +199,19 @@
             try { window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); v.srcObject = window.stream; } 
             catch (e) { alert("Kamera hatası!"); state.cameraActive = false; render(); }
         }
+    }
+
+    async function addNewComment() {
+        const locId = document.getElementById("newLocSelect").value;
+        const text = state.newCommentText.trim();
+        const rating = state.newCommentRating;
+        const photo = state.newCommentPhoto;
+        if (!locId || !text || rating === 0) return alert("Eksik bilgi!");
+        let finalPhoto = ""; if (photo) finalPhoto = await resizeImage(photo, 600);
+        const now = new Date();
+        const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
+        db.collection("comments").add({ locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
+        .then(() => { state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); });
     }
 
     app.addEventListener("click", e => {
@@ -232,10 +246,11 @@
     });
 
     app.addEventListener("change", e => {
-        if (e.target.id === "locSelect") state.selectedLoc = e.target.value;
-        if (e.target.id === "galleryInput") {
+        if (e.target.name === "rating") state.newCommentRating = parseInt(e.target.value);
+        if (e.target.id === "locSelect" || e.target.id === "newLocSelect") state.selectedLoc = e.target.value;
+        if (e.target.id === "galleryInput" || e.target.id === "newCommentPhotoInput") {
             const reader = new FileReader();
-            reader.onload = ev => { state.imageSource = ev.target.result; render(); };
+            reader.onload = ev => { state.imageSource = ev.target.result; state.newCommentPhoto = ev.target.result; render(); };
             reader.readAsDataURL(e.target.files[0]);
         }
     });
