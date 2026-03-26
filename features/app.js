@@ -124,14 +124,14 @@
         state.showModal = true; state.geminiLoading = true; render();
         
         const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
-        const prompt = `Sen bir kampüs erişilebilirlik uzmanısın. Konum: ${locInfo.title}, Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki fiziksel engelleri (rampa, basamak, zemin vb.) analiz et ve kısa, nazik tavsiyeler ver.`;
+        const prompt = `Sen bir kampüs erişilebilirlik uzmanısın. Konum: ${locInfo.title}, Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki fiziksel engelleri (rampa, basamak, zemin vb.) analiz et ve kısa tavsiyeler ver.`;
 
         try {
             const compressedImg = await resizeImage(state.imageSource, 800);
-            // LOVABLE VERİ HATASI DÜZELTME:
             const base64Data = compressedImg.replace(/^data:image\/(png|jpg|jpeg);base64,/, "");
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+            // v1beta hatasını çözen STABİL v1 ADRESİ:
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -147,17 +147,20 @@
             const data = await response.json();
 
             if (data.error) {
-                state.geminiResult = `❌ Google Hatası: ${data.error.message}`;
+                state.geminiResult = `<div class="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400">
+                    <p class="font-bold">❌ Google API Hatası:</p>
+                    <p class="text-[10px] mt-1">${data.error.message}</p>
+                </div>`;
             } else if (data.candidates && data.candidates[0]) {
                 let resultText = data.candidates[0].content.parts[0].text;
                 resultText = resultText.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2 mb-1">$1</strong>');
                 resultText = resultText.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
                 state.geminiResult = `<div class="space-y-1">${resultText}</div>`;
             } else {
-                state.geminiResult = "⚠️ Analiz yapılamadı. API anahtarını kontrol edip tekrar deneyin.";
+                state.geminiResult = "⚠️ Analiz yapılamadı. Farklı bir fotoğraf deneyin.";
             }
         } catch (error) {
-            state.geminiResult = `❌ Sistem Hatası: ${error.message}`;
+            state.geminiResult = `<p class="text-rose-400">❌ Sistem Hatası: ${error.message}</p>`;
         }
         state.geminiLoading = false;
         render();
@@ -178,9 +181,14 @@
         return `<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[380px] bg-slate-800/90 backdrop-blur-md rounded-2xl p-2 flex justify-around shadow-2xl z-50 border border-slate-700">${tabs.map(t => `<button data-action="tab" data-id="${t.id}" class="flex-1 py-2 rounded-xl ${state.tab===t.id?'bg-slate-700 text-white shadow-inner':'text-slate-400'} flex flex-col items-center gap-1 transition-all"><i class="${t.icon} text-2xl"></i><span class="text-[9px] font-bold uppercase tracking-widest">${t.label}</span></button>`).join('')}</nav>`;
     }
 
+    function renderFullscreenImage() {
+        if (!state.fullscreenImgSrc) return "";
+        return `<div class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4" data-action="close-fullscreen"><img src="${state.fullscreenImgSrc}" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/10"></div>`;
+    }
+
     function render() {
         let content = state.tab === "giris" ? renderGiris() : (state.tab === "analiz" ? renderAnaliz() : renderTopluluk());
-        app.innerHTML = content + (renderModal() || "") + renderTabBar();
+        app.innerHTML = content + (renderModal() || "") + renderFullscreenImage() + renderTabBar();
         if (state.cameraActive && state.tab === "analiz") startVideo();
     }
 
@@ -192,23 +200,9 @@
         }
     }
 
-    async function addNewComment() {
-        const locId = document.getElementById("newLocSelect").value;
-        const text = state.newCommentText.trim();
-        const rating = state.newCommentRating;
-        const photo = state.newCommentPhoto;
-        if (!locId || !text || rating === 0) return alert("Eksik bilgi!");
-        let finalPhoto = ""; if (photo) finalPhoto = await resizeImage(photo, 600);
-        const now = new Date();
-        const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
-        db.collection("comments").add({ locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() })
-        .then(() => { state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); });
-    }
-
     app.addEventListener("click", e => {
         const btn = e.target.closest("[data-action]"); if (!btn) return;
         const act = btn.dataset.action;
-        if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = null; render(); }
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
             const profile = document.getElementById("userProfileInput").value;
@@ -217,7 +211,6 @@
             localStorage.setItem("userName", name); localStorage.setItem("userProfile", profile);
             state.userName = name; state.userProfile = profile;
             if (key) { GEMINI_API_KEY = key; localStorage.setItem("gemini_api_key", key); }
-            if (!GEMINI_API_KEY) return alert("API Key girin!");
             state.tab = "analiz"; render();
         }
         if (act === "tab") { state.tab = btn.dataset.id; render(); }
@@ -227,27 +220,24 @@
             const canvas = document.createElement("canvas");
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext("2d").drawImage(video, 0, 0);
-            state.imageSource = canvas.toDataURL("image/jpeg"); state.newCommentPhoto = state.imageSource;
+            state.imageSource = canvas.toDataURL("image/jpeg");
             state.cameraActive = false; if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); window.stream = null; render();
         }
         if (act === "run-ai") runAI();
         if (act === "close-modal") { state.showModal = false; render(); }
+        if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = null; render(); }
+        if (act === "open-fullscreen") { state.fullscreenImgSrc = btn.dataset.src; render(); }
+        if (act === "close-fullscreen") { state.fullscreenImgSrc = null; render(); }
         if (act === "add-new-comment") addNewComment();
     });
 
     app.addEventListener("change", e => {
-        if (e.target.name === "rating") state.newCommentRating = parseInt(e.target.value);
-        if (e.target.id === "locSelect" || e.target.id === "newLocSelect") state.selectedLoc = e.target.value;
-        if (e.target.id === "galleryInput" || e.target.id === "newCommentPhotoInput") {
+        if (e.target.id === "locSelect") state.selectedLoc = e.target.value;
+        if (e.target.id === "galleryInput") {
             const reader = new FileReader();
-            reader.onload = ev => { state.imageSource = ev.target.result; state.newCommentPhoto = ev.target.result; render(); };
+            reader.onload = ev => { state.imageSource = ev.target.result; render(); };
             reader.readAsDataURL(e.target.files[0]);
         }
-    });
-
-    app.addEventListener("input", e => { 
-        if (e.target.id === "newCommentText") state.newCommentText = e.target.value; 
-        if (e.target.id === "customQuestionInput") state.customQuestion = e.target.value;
     });
 
     render();
