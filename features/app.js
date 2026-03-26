@@ -124,7 +124,8 @@
     }
 
     async function runAI() {
-        if (!state.selectedLoc || !state.imageSource) return alert("Konum seçin ve fotoğraf çekin!");
+        if (!state.selectedLoc) return alert("Lütfen bir konum seçin!");
+if (!state.imageSource) return alert("Lütfen önce bir fotoğraf çekin!");
         state.showModal = true; state.geminiLoading = true; render();
         
         const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
