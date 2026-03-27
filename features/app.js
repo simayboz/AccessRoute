@@ -24,11 +24,25 @@
         { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
+    // AI'ın okuması için arka plan yorum veritabanı
+    const STATIC_COMMENTS = [
+        { locId: "chem", text: "Yokuş çok dik, kışın ıslakken manuel tekerlekli sandalyenin tekerlekleri kayıyor." },
+        { locId: "lib", text: "Kampüsün en erişilebilir binası kesinlikle burası, asansörler çok geniş." },
+        { locId: "koy_yokusu", text: "Kaldırımlar dar ve zemin bozuk, koltuk değneğiyle yürürken çok zorluyor." },
+        { locId: "kyk_kiz", text: "Yurt girişindeki rampanın eğimi fena değil ama kapı eşiğinde takılma riski var." }
+    ];
+
     const state = {
         tab: "giris", userName: STORED_USER_NAME, userProfile: STORED_USER_PROFILE,
         selectedLoc: "", imageSource: null, cameraActive: false, aiLoading: false, 
-        aiResult: "", showModal: false, customQuestion: ""
+        aiResult: "", showModal: false, customQuestion: "", comments: [...STATIC_COMMENTS]
     };
+
+    // Firebase'den anlık yorumları da çekip state'e ekliyoruz (Eğer veritabanında varsa AI onları da okur)
+    db.collection("comments").onSnapshot((snapshot) => {
+        const liveComments = snapshot.docs.map(doc => doc.data());
+        state.comments = [...liveComments, ...STATIC_COMMENTS]; 
+    });
 
     const app = document.getElementById("app");
 
@@ -64,11 +78,11 @@
             <div class="w-full max-w-sm space-y-4">
                 <input type="text" id="userNameInput" value="${state.userName}" placeholder="Adınız Soyadınız" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-white outline-none focus:border-red-600 shadow-inner">
                 <select id="userProfileInput" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-slate-300 appearance-none outline-none focus:border-red-600">
-                    <option value="Belirtilmedi">Hareketlilik Tercihi</option>
-                    <option value="Manuel Tekerlekli Sandalye">Manuel Tekerlekli Sandalye</option>
-                    <option value="Akülü Tekerlekli Sandalye">Akülü Tekerlekli Sandalye</option>
-                    <option value="Koltuk Değneği veya Yürüteç">Koltuk Değneği / Yürüteç</option>
-                    <option value="Beyaz Baston (Görme Desteği)">Beyaz Baston / Görme Desteği</option>
+                    <option value="Belirtilmedi" ${state.userProfile === 'Belirtilmedi' ? 'selected' : ''}>Hareketlilik Tercihi</option>
+                    <option value="Manuel Tekerlekli Sandalye" ${state.userProfile === 'Manuel Tekerlekli Sandalye' ? 'selected' : ''}>Manuel Tekerlekli Sandalye</option>
+                    <option value="Akülü Tekerlekli Sandalye" ${state.userProfile === 'Akülü Tekerlekli Sandalye' ? 'selected' : ''}>Akülü Tekerlekli Sandalye</option>
+                    <option value="Koltuk Değneği veya Yürüteç" ${state.userProfile === 'Koltuk Değneği veya Yürüteç' ? 'selected' : ''}>Koltuk Değneği / Yürüteç</option>
+                    <option value="Beyaz Baston (Görme Desteği)" ${state.userProfile === 'Beyaz Baston (Görme Desteği)' ? 'selected' : ''}>Beyaz Baston / Görme Desteği</option>
                 </select>
                 ${!hasKey ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (AIza...)" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-emerald-400 outline-none focus:border-emerald-500">` : 
                 `<div class="bg-slate-900/50 py-4 px-5 rounded-2xl border border-slate-800 flex flex-col items-center gap-2">
@@ -97,7 +111,7 @@
                 <button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest">${state.cameraActive?'Kapat':'Kamera'}</button>
                 <label class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest text-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
             </div>
-            <input type="text" id="customQuestionInput" placeholder="Yapay zekaya soru sor... (Örn: Rampa var mı?)" value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
+            <input type="text" id="customQuestionInput" placeholder="Yapay zekaya soru sor..." value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
             <button data-action="run-ai" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm mt-2">✨ Analizi Başlat</button>
         </div>`;
     }
@@ -110,8 +124,27 @@
             const compressedImg = await resizeImage(state.imageSource, 800);
             const base64Data = compressedImg.split(',')[1];
             
-            const questionText = state.customQuestion ? ` Ayrıca kullanıcının şu özel sorusuna da cevap ver: "${state.customQuestion}".` : "";
-            const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı Profili: ${state.userProfile}.${questionText} Fotoğraftaki engelleri (rampa, basamak vb.) raporla ve nazik tavsiyeler ver.`;
+            const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
+            const locTitle = locInfo ? locInfo.title : state.selectedLoc;
+
+            // AI'a gönderilecek verileri derliyoruz
+            const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
+            let commentsText = "";
+            if (locComments.length > 0) {
+                commentsText = `\nTopluluk Yorumları: Bu konum hakkında diğer öğrencilerin deneyimleri şunlardır: ` + locComments.map(c => `"${c.text}"`).join(" | ");
+            }
+
+            const questionText = state.customQuestion ? `\nKullanıcının Özel Sorusu: "${state.customQuestion}"` : "";
+            
+            // Muazzam, her şeyi kapsayan Prompt
+            const prompt = `Sen İYTE kampüsü erişilebilirlik uzmanısın. 
+Konum: ${locTitle}. 
+Kullanıcının Hareketlilik Profili: ${state.userProfile}.${commentsText}${questionText} 
+
+GÖREVİN: 
+1. Fotoğraftaki fiziksel engelleri (rampa, basamak vb.) analiz et.
+2. ÖNEMLİ: Analizini ve tavsiyelerini KESİNLİKLE kullanıcının "${state.userProfile}" profilini ve yukarıdaki topluluk yorumlarını göz önünde bulundurarak yap.
+3. Kullanıcının özel sorusu varsa mutlaka yanıtla. Kısa, net ve nazik bir rapor ver.`;
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -148,7 +181,7 @@
 
     function renderModal() {
         if (!state.showModal) return "";
-        return `<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md animate-fade-in"><div class="bg-slate-800 border border-slate-700 rounded-[2.5rem] p-7 w-full max-w-sm shadow-2xl relative"><h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="ph-fill ph-robot text-red-500"></i> AI Raporu</h3><div class="text-xs leading-relaxed text-slate-200 bg-slate-900/50 p-5 rounded-2xl max-h-80 overflow-y-auto mb-6 border border-white/5 shadow-inner">${state.aiLoading ? '<div class="flex flex-col items-center gap-4 py-8"><div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div><p class="animate-pulse">Görsel işleniyor...</p></div>' : state.aiResult}</div>${!state.aiLoading ? `<button data-action="close-modal" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">Kapat</button>` : ''}</div></div>`;
+        return `<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md animate-fade-in"><div class="bg-slate-800 border border-slate-700 rounded-[2.5rem] p-7 w-full max-w-sm shadow-2xl relative"><h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="ph-fill ph-robot text-red-500"></i> AI Raporu</h3><div class="text-xs leading-relaxed text-slate-200 bg-slate-900/50 p-5 rounded-2xl max-h-80 overflow-y-auto mb-6 border border-white/5 shadow-inner">${state.aiLoading ? '<div class="flex flex-col items-center gap-4 py-8"><div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div><p class="animate-pulse">Görsel, Profil ve Yorumlar İşleniyor...</p></div>' : state.aiResult}</div>${!state.aiLoading ? `<button data-action="close-modal" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">Kapat</button>` : ''}</div></div>`;
     }
 
     function render() {
