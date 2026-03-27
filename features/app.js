@@ -11,7 +11,8 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    let GROQ_API_KEY = localStorage.getItem("groq_api_key") || "";
+    // Değişken adını Gemini olarak güncelledik
+    let GEMINI_API_KEY = localStorage.getItem("gemini_api_key") || "";
     let STORED_USER_NAME = localStorage.getItem("userName") || "";
     let STORED_USER_PROFILE = localStorage.getItem("userProfile") || "Belirtilmedi";
     
@@ -46,7 +47,7 @@
     }
 
     function renderGiris() {
-        const hasKey = (GROQ_API_KEY && GROQ_API_KEY.length > 5);
+        const hasKey = (GEMINI_API_KEY && GEMINI_API_KEY.length > 5);
         return `<div class="flex flex-col items-center justify-center min-h-screen space-y-10 text-center px-10 animate-fade-in bg-[#0f172a]">
             <div class="relative w-32 h-32 flex items-center justify-center">
                 <div class="absolute inset-0 bg-red-600 rounded-full blur-3xl opacity-20"></div>
@@ -65,9 +66,9 @@
                     <option value="Manuel Tekerlekli Sandalye">Manuel Tekerlekli Sandalye</option>
                     <option value="Akülü Tekerlekli Sandalye">Akülü Tekerlekli Sandalye</option>
                 </select>
-                ${!hasKey ? `<input type="password" id="apiKeyInput" placeholder="Groq API Key (gsk_...)" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-emerald-400 outline-none focus:border-emerald-500">` : 
+                ${!hasKey ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (AIza...)" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-blue-400 outline-none focus:border-blue-500">` : 
                 `<div class="bg-slate-900/50 py-4 px-5 rounded-2xl border border-slate-800 flex flex-col items-center gap-2">
-                    <span class="text-xs text-emerald-400 font-medium">✅ Groq AI Hazır</span>
+                    <span class="text-xs text-blue-400 font-medium">✅ Gemini AI Aktif</span>
                     <button data-action="reset-key" class="text-[10px] text-rose-500 underline uppercase font-bold">Anahtarı Sıfırla</button>
                 </div>`}
                 <button data-action="submit-login" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-all text-lg mt-4">Uygulamaya Başla</button>
@@ -102,24 +103,33 @@
         
         try {
             const compressedImg = await resizeImage(state.imageSource, 800);
-            const prompt = `Analiz yap: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (rampa, basamak vb.) kısa ve net şekilde raporla.`;
+            const base64Data = compressedImg.split(',')[1];
+            
+            const prompt = `İzmir Yüksek Teknoloji Enstitüsü (İYTE) bünyesinde bir erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki engelleri (rampa eğimi, yüksek basamaklar, dar geçişler vb.) bu kullanıcı için analiz et ve kısa, madde madde raporla.`;
 
-            // GÜNCEL MODEL: llama-3.2-90b-vision-preview
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            // Gemini API Call
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+            const response = await fetch(url, {
                 method: "POST",
-                headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "llama-3.2-90b-vision-preview",
-                    messages: [{ role: "user", content: [{ type: "text", text: prompt }, { type: "image_url", image_url: { url: compressedImg } }] }],
-                    temperature: 0.5
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                        ]
+                    }]
                 })
             });
 
             const data = await response.json();
+            
             if (data.error) {
                 state.aiResult = `<span class="text-red-400">Hata: ${data.error.message}</span>`;
             } else {
-                let res = data.choices[0].message.content;
+                let res = data.candidates[0].content.parts[0].text;
+                // Markdown formatlama
                 res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2">$1</strong>');
                 res = res.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
                 state.aiResult = `<div class="text-left">${res}</div>`;
@@ -149,13 +159,13 @@
     app.addEventListener("click", e => {
         const btn = e.target.closest("[data-action]"); if (!btn) return;
         const act = btn.dataset.action;
-        if (act === "reset-key") { localStorage.removeItem("groq_api_key"); GROQ_API_KEY = ""; render(); }
+        if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = ""; render(); }
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
             const key = document.getElementById("apiKeyInput")?.value;
             if (name.length < 2) return alert("Lütfen isminizi girin.");
-            if (key) { GROQ_API_KEY = key; localStorage.setItem("groq_api_key", key); }
-            if (!GROQ_API_KEY) return alert("Groq API Key gerekli!");
+            if (key) { GEMINI_API_KEY = key; localStorage.setItem("gemini_api_key", key); }
+            if (!GEMINI_API_KEY) return alert("Gemini API Key gerekli!");
             state.userName = name; state.tab = "analiz"; render();
         }
         if (act === "open-camera") { state.cameraActive = true; render(); }
