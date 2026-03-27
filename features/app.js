@@ -11,7 +11,6 @@
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Değişken adını Gemini olarak güncelledik
     let GEMINI_API_KEY = localStorage.getItem("gemini_api_key") || "";
     let STORED_USER_NAME = localStorage.getItem("userName") || "";
     let STORED_USER_PROFILE = localStorage.getItem("userProfile") || "Belirtilmedi";
@@ -107,8 +106,8 @@
             
             const prompt = `İzmir Yüksek Teknoloji Enstitüsü (İYTE) bünyesinde bir erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı Profili: ${state.userProfile}. Fotoğraftaki engelleri (rampa eğimi, yüksek basamaklar, dar geçişler vb.) bu kullanıcı için analiz et ve kısa, madde madde raporla.`;
 
-            // Gemini API Call
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            // Gemini API v1 Call (Stable)
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const response = await fetch(url, {
                 method: "POST",
@@ -127,6 +126,8 @@
             
             if (data.error) {
                 state.aiResult = `<span class="text-red-400">Hata: ${data.error.message}</span>`;
+            } else if (!data.candidates || data.candidates.length === 0) {
+                state.aiResult = `<span class="text-red-400">Hata: Gemini API cevap vermedi.</span>`;
             } else {
                 let res = data.candidates[0].content.parts[0].text;
                 // Markdown formatlama
