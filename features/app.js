@@ -104,10 +104,10 @@
             const compressedImg = await resizeImage(state.imageSource, 800);
             const base64Data = compressedImg.split(',')[1];
             
-            const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (basamak, rampa eğimi, yüzey durumu vb.) bu kullanıcı profiline göre değerlendir ve kısa, net, madde madde raporla.`;
+            const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (rampa, basamak vb.) raporla.`;
 
-            // EN GÜNCEL URL YAPISI (v1beta kullanımı Gemini 1.5 Flash için en uyumlusudur)
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            // GÜNCEL VE DOĞRU URL YAPISI (v1 sürümü ve gemini-1.5-flash)
+            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const response = await fetch(url, {
                 method: "POST",
@@ -125,18 +125,18 @@
             const data = await response.json();
             
             if (data.error) {
-                // Hata durumunda mesajı gösteriyoruz (Burası hatayı yakalamamızı sağlar)
                 state.aiResult = `<span class="text-red-400">Hata: ${data.error.message}</span>`;
             } else if (!data.candidates || data.candidates.length === 0) {
-                state.aiResult = `<span class="text-red-400">Hata: Model cevap üretmedi.</span>`;
+                state.aiResult = `<span class="text-red-400">Hata: Yanıt alınamadı.</span>`;
             } else {
                 let res = data.candidates[0].content.parts[0].text;
-                // Markdown formatlama
                 res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2">$1</strong>');
                 res = res.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
                 state.aiResult = `<div class="text-left">${res}</div>`;
             }
-        } catch (e) { state.aiResult = `<span class="text-red-400">Sistem hatası: ${e.message}</span>`; }
+        } catch (e) { 
+            state.aiResult = `<span class="text-red-400">Sistem hatası: ${e.message}</span>`; 
+        }
         state.aiLoading = false; render();
     }
 
@@ -153,32 +153,53 @@
     async function startVideo() {
         const v = document.getElementById("cameraVideo");
         if (v && !window.stream) {
-            try { window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); v.srcObject = window.stream; } 
-            catch (e) { alert("Kamera açılamadı."); state.cameraActive = false; render(); }
+            try { 
+                window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
+                v.srcObject = window.stream; 
+            } catch (e) { 
+                alert("Kamera açılamadı."); 
+                state.cameraActive = false; 
+                render(); 
+            }
         }
     }
 
     app.addEventListener("click", e => {
         const btn = e.target.closest("[data-action]"); if (!btn) return;
         const act = btn.dataset.action;
-        if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = ""; render(); }
+        if (act === "reset-key") { 
+            localStorage.removeItem("gemini_api_key"); 
+            GEMINI_API_KEY = ""; 
+            render(); 
+        }
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
             const key = document.getElementById("apiKeyInput")?.value;
             if (name.length < 2) return alert("Lütfen isminizi girin.");
-            if (key) { GEMINI_API_KEY = key; localStorage.setItem("gemini_api_key", key); }
+            if (key) { 
+                GEMINI_API_KEY = key; 
+                localStorage.setItem("gemini_api_key", key); 
+            }
             if (!GEMINI_API_KEY) return alert("Gemini API Key gerekli!");
             state.userName = name; state.tab = "analiz"; render();
         }
         if (act === "open-camera") { state.cameraActive = true; render(); }
-        if (act === "stop-camera") { state.cameraActive = false; if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); window.stream = null; render(); }
+        if (act === "stop-camera") { 
+            state.cameraActive = false; 
+            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); 
+            window.stream = null; 
+            render(); 
+        }
         if (act === "take-photo") {
             const video = document.getElementById("cameraVideo");
             const canvas = document.createElement("canvas");
             canvas.width = video.videoWidth; canvas.height = video.videoHeight;
             canvas.getContext("2d").drawImage(video, 0, 0);
             state.imageSource = canvas.toDataURL("image/jpeg");
-            state.cameraActive = false; if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); window.stream = null; render();
+            state.cameraActive = false; 
+            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); 
+            window.stream = null; 
+            render();
         }
         if (act === "run-ai") runAI();
         if (act === "close-modal") { state.showModal = false; render(); }
