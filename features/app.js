@@ -24,27 +24,27 @@
         { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
-    // AI'ın okuması için arka plan yorum veritabanı
     const STATIC_COMMENTS = [
-        { locId: "chem", text: "Yokuş çok dik, kışın ıslakken manuel tekerlekli sandalyenin tekerlekleri kayıyor." },
-        { locId: "lib", text: "Kampüsün en erişilebilir binası kesinlikle burası, asansörler çok geniş." },
-        { locId: "koy_yokusu", text: "Kaldırımlar dar ve zemin bozuk, koltuk değneğiyle yürürken çok zorluyor." },
-        { locId: "kyk_kiz", text: "Yurt girişindeki rampanın eğimi fena değil ama kapı eşiğinde takılma riski var." }
+        { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Yokuş çok dik, kışın ıslakken tekerlekler kayıyor.", date: "15 Mar 2026" },
+        { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kampüsün en erişilebilir binası kesinlikle burası.", date: "16 Mar 2026" }
     ];
 
     const state = {
         tab: "giris", userName: STORED_USER_NAME, userProfile: STORED_USER_PROFILE,
         selectedLoc: "", imageSource: null, cameraActive: false, aiLoading: false, 
-        aiResult: "", showModal: false, customQuestion: "", comments: [...STATIC_COMMENTS]
+        aiResult: "", showModal: false, customQuestion: "", fullscreenImgSrc: null,
+        comments: [...STATIC_COMMENTS],
+        newCommentPhoto: null, newCommentText: "", newCommentRating: 0
     };
 
-    // Firebase'den anlık yorumları da çekip state'e ekliyoruz (Eğer veritabanında varsa AI onları da okur)
-    db.collection("comments").onSnapshot((snapshot) => {
-        const liveComments = snapshot.docs.map(doc => doc.data());
-        state.comments = [...liveComments, ...STATIC_COMMENTS]; 
-    });
-
     const app = document.getElementById("app");
+
+    // Firebase'den anlık yorumları çekiyoruz
+    db.collection("comments").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+        const liveComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        state.comments = [...liveComments, ...STATIC_COMMENTS]; 
+        if (state.tab === "topluluk") render(); 
+    });
 
     async function resizeImage(base64Str, maxWidth = 800) {
         return new Promise((resolve) => {
@@ -60,6 +60,19 @@
                 resolve(canvas.toDataURL('image/jpeg', 0.7));
             };
         });
+    }
+
+    function getProfileBadge(profile) {
+        const badges = {
+            "Manuel Tekerlekli Sandalye": { style: "bg-blue-500/10 text-blue-400 border-blue-500/20", icon: "ph-wheelchair" },
+            "Akülü Tekerlekli Sandalye": { style: "bg-purple-500/10 text-purple-400 border-purple-500/20", icon: "ph-wheelchair" },
+            "Koltuk Değneği veya Yürüteç": { style: "bg-orange-500/10 text-orange-400 border-orange-500/20", icon: "ph-person" },
+            "Beyaz Baston (Görme Desteği)": { style: "bg-teal-500/10 text-teal-400 border-teal-500/20", icon: "ph-eye-slash" },
+            "Fiziksel Destek İhtiyacı Yok": { style: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20", icon: "ph-person-arms-spread" },
+            "Belirtilmedi": { style: "bg-slate-500/10 text-slate-400 border-slate-500/20", icon: "ph-user" }
+        };
+        const badge = badges[profile] || badges["Belirtilmedi"];
+        return `<span class="inline-flex items-center gap-1.5 text-[10px] px-2.5 py-1 rounded-full border ${badge.style}"><i class="ph-fill ${badge.icon}"></i> ${profile}</span>`;
     }
 
     function renderGiris() {
@@ -95,7 +108,7 @@
     }
 
     function renderAnaliz() {
-        return `<div class="min-h-screen bg-[#0f172a] text-white p-4 space-y-4 pb-24 animate-fade-in">
+        return `<div class="min-h-screen bg-[#0f172a] text-white p-4 space-y-4 pb-28 animate-fade-in">
             <div class="glass rounded-3xl p-5 border border-white/10 mt-2">
                 <h2 class="text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-scan text-red-500"></i> AI Analizi</h2>
             </div>
@@ -103,8 +116,8 @@
                 <option value="">Konum Seçin...</option>
                 ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
             </select>
-            <div class="relative w-full h-[350px] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-800 shadow-2xl">
-                ${state.cameraActive ? '<video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>' : (state.imageSource ? `<img src="${state.imageSource}" class="w-full h-full object-cover">` : '<div class="flex flex-col items-center justify-center h-full text-slate-500 gap-3"><i class="ph ph-camera text-4xl"></i><span class="text-xs italic">Fotoğraf Bekleniyor</span></div>')}
+            <div class="relative w-full h-[320px] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-800 shadow-2xl">
+                ${state.cameraActive ? '<video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>' : (state.imageSource ? `<img src="${state.imageSource}" class="w-full h-full object-cover" data-action="open-fullscreen" data-src="${state.imageSource}">` : '<div class="flex flex-col items-center justify-center h-full text-slate-500 gap-3"><i class="ph ph-camera text-4xl"></i><span class="text-xs italic">Fotoğraf Bekleniyor</span></div>')}
                 ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white text-red-600 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="ph-fill ph-camera text-2xl"></i></button>' : ''}
             </div>
             <div class="grid grid-cols-2 gap-3">
@@ -114,6 +127,138 @@
             <input type="text" id="customQuestionInput" placeholder="Yapay zekaya soru sor..." value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
             <button data-action="run-ai" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm mt-2">✨ Analizi Başlat</button>
         </div>`;
+    }
+
+    function renderTopluluk() {
+        return `<div class="min-h-screen bg-[#0f172a] text-white p-4 space-y-6 pb-28 animate-fade-in pt-6">
+            <h2 class="text-xl font-bold flex items-center gap-2 px-2"><i class="ph-fill ph-users-three text-red-500"></i> Kampüs Sesi</h2>
+            
+            <div class="bg-slate-900 rounded-[2rem] p-5 shadow-2xl border border-slate-800">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center font-bold text-sm shadow-lg border border-red-500/50">${state.userName.substring(0,2).toUpperCase()}</div>
+                    <span class="text-sm font-semibold text-white">Deneyimini Paylaş</span>
+                </div>
+                <div class="space-y-3">
+                    <select id="newLocSelect" class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-xs text-white appearance-none focus:border-red-600 outline-none">
+                        <option value="">Konum Seç...</option>
+                        ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
+                    </select>
+                    <div class="flex gap-3">
+                        <label class="border-2 border-dashed border-slate-600 rounded-2xl w-20 h-24 flex flex-col items-center justify-center cursor-pointer overflow-hidden shrink-0 hover:border-red-500 transition-colors">
+                            ${state.newCommentPhoto ? `<img src="${state.newCommentPhoto}" class="w-full h-full object-cover">` : '<i class="ph ph-camera text-xl text-slate-500"></i>'}
+                            <input type="file" accept="image/*" class="hidden" id="newCommentPhotoInput">
+                        </label>
+                        <textarea id="newCommentText" class="flex-1 bg-slate-800 border border-slate-700 rounded-2xl p-3 text-xs outline-none focus:border-red-600 resize-none text-white shadow-inner" placeholder="Düşüncelerini paylaş..."></textarea>
+                    </div>
+                    <div class="flex items-center justify-between mt-2">
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" /><label for="star5" class="ph-fill ph-star"></label>
+                            <input type="radio" id="star4" name="rating" value="4" /><label for="star4" class="ph-fill ph-star"></label>
+                            <input type="radio" id="star3" name="rating" value="3" /><label for="star3" class="ph-fill ph-star"></label>
+                            <input type="radio" id="star2" name="rating" value="2" /><label for="star2" class="ph-fill ph-star"></label>
+                            <input type="radio" id="star1" name="rating" value="1" /><label for="star1" class="ph-fill ph-star"></label>
+                        </div>
+                        <button data-action="add-new-comment" class="bg-white text-slate-900 px-6 py-2.5 rounded-xl font-bold text-xs shadow-lg active:scale-95 transition-all">Gönder</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                ${IYTE_LOCATIONS.map(loc => { 
+                    const locComments = state.comments.filter(c => c.locId === loc.id); 
+                    if (locComments.length === 0) return ""; 
+                    return `<div class="space-y-3">
+                        <h3 class="font-bold text-white text-sm pl-2 flex items-center gap-2"><div class="w-1.5 h-4 bg-red-500 rounded-full"></div> ${loc.title}</h3>
+                        ${locComments.map(c => `
+                            <div class="bg-slate-900 rounded-[1.5rem] p-4 flex gap-4 items-start shadow-xl border border-slate-800 animate-fade-in">
+                                ${c.photo ? `<img src="${c.photo}" class="w-20 h-24 object-cover rounded-xl border border-slate-700 cursor-pointer" data-action="open-fullscreen" data-src="${c.photo}">` : `<div class="w-16 h-16 bg-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-slate-700"><i class="ph-fill ph-chat-circle-dots text-slate-600 text-2xl"></i></div>`}
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex flex-col truncate gap-1">
+                                            <span class="font-bold text-sm text-white">@${c.user}</span>
+                                            ${getProfileBadge(c.profile)}
+                                        </div>
+                                        <span class="text-[9px] text-slate-500 shrink-0 font-medium">${c.date}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-300 pt-2 leading-relaxed">${c.text}</p>
+                                    <div class="text-[10px] text-amber-400 mt-1">${'⭐'.repeat(c.rating)}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>`; 
+                }).join('')}
+            </div>
+        </div>`;
+    }
+
+    function renderTabBar() {
+        if (state.tab === "giris") return "";
+        const tabs = [{ id: "analiz", label: "Analiz", icon: "ph-scan" }, { id: "topluluk", label: "Topluluk", icon: "ph-chats" }];
+        return `<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[85%] max-w-[380px] bg-slate-900/90 backdrop-blur-xl rounded-2xl p-2 flex justify-around shadow-2xl z-50 border border-slate-700">
+            ${tabs.map(t => `<button data-action="tab" data-id="${t.id}" class="flex-1 py-2.5 rounded-xl ${state.tab===t.id?'bg-slate-800 text-white shadow-inner border border-slate-700':'text-slate-500'} flex flex-col items-center gap-1 transition-all active:scale-95"><i class="${state.tab===t.id ? 'ph-fill' : 'ph'} ${t.icon} text-2xl ${state.tab===t.id?'text-red-500':''}"></i><span class="text-[9px] font-bold uppercase tracking-widest">${t.label}</span></button>`).join('')}
+        </nav>`;
+    }
+
+    function renderModal() {
+        if (!state.showModal) return "";
+        return `<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/95 backdrop-blur-md animate-fade-in">
+            <div class="bg-slate-800 border border-slate-700 rounded-[2.5rem] p-7 w-full max-w-sm shadow-2xl relative">
+                <h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="ph-fill ph-robot text-red-500"></i> AI Raporu</h3>
+                <div class="text-xs leading-relaxed text-slate-200 bg-slate-900/80 p-5 rounded-2xl max-h-80 overflow-y-auto mb-6 border border-white/5 shadow-inner">
+                    ${state.aiLoading ? '<div class="flex flex-col items-center gap-4 py-8"><div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div><p class="animate-pulse text-slate-400">Görsel, Profil ve Yorumlar İşleniyor...</p></div>' : state.aiResult}
+                </div>
+                ${!state.aiLoading ? `<button data-action="close-modal" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">Kapat</button>` : ''}
+            </div>
+        </div>`;
+    }
+
+    function renderFullscreenImage() {
+        if (!state.fullscreenImgSrc) return "";
+        return `<div class="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 animate-fade-in" data-action="close-fullscreen">
+            <img src="${state.fullscreenImgSrc}" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl border border-white/10">
+        </div>`;
+    }
+
+    function render() {
+        let content = state.tab === "giris" ? renderGiris() : (state.tab === "analiz" ? renderAnaliz() : renderTopluluk());
+        app.innerHTML = content + renderModal() + renderFullscreenImage() + renderTabBar();
+        if (state.cameraActive && state.tab === "analiz") startVideo();
+    }
+
+    async function startVideo() {
+        const v = document.getElementById("cameraVideo");
+        if (v && !window.stream) {
+            try { 
+                window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
+                v.srcObject = window.stream; 
+            } catch (e) { 
+                alert("Kamera açılamadı."); 
+                state.cameraActive = false; 
+                render(); 
+            }
+        }
+    }
+
+    async function addNewComment() {
+        const locId = document.getElementById("newLocSelect").value;
+        const text = state.newCommentText.trim();
+        const rating = state.newCommentRating;
+        const photo = state.newCommentPhoto;
+        
+        if (!locId || !text || rating === 0) return alert("Lütfen konum, yorum ve puan seçin!");
+        
+        let finalPhoto = ""; 
+        if (photo) finalPhoto = await resizeImage(photo, 600);
+        
+        const now = new Date();
+        const formattedDate = `${now.getDate()} ${["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"][now.getMonth()]} ${now.getFullYear()}`;
+        
+        db.collection("comments").add({ 
+            locId: locId, user: state.userName, profile: state.userProfile, photo: finalPhoto, 
+            rating: rating, text: text, date: formattedDate, timestamp: firebase.firestore.FieldValue.serverTimestamp() 
+        }).then(() => { 
+            state.newCommentPhoto = null; state.newCommentText = ""; state.newCommentRating = 0; render(); 
+        });
     }
 
     async function runAI() {
@@ -127,7 +272,6 @@
             const locInfo = IYTE_LOCATIONS.find(l => l.id === state.selectedLoc);
             const locTitle = locInfo ? locInfo.title : state.selectedLoc;
 
-            // AI'a gönderilecek verileri derliyoruz
             const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
             let commentsText = "";
             if (locComments.length > 0) {
@@ -136,7 +280,6 @@
 
             const questionText = state.customQuestion ? `\nKullanıcının Özel Sorusu: "${state.customQuestion}"` : "";
             
-            // Muazzam, her şeyi kapsayan Prompt
             const prompt = `Sen İYTE kampüsü erişilebilirlik uzmanısın. 
 Konum: ${locTitle}. 
 Kullanıcının Hareketlilik Profili: ${state.userProfile}.${commentsText}${questionText} 
@@ -167,9 +310,9 @@ GÖREVİN:
                 state.aiResult = `<span class="text-red-400">API Hatası: ${data.error?.message || 'Bilinmeyen hata'}</span>`;
             } else if (data.candidates && data.candidates.length > 0) {
                 let res = data.candidates[0].content.parts[0].text;
-                res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2">$1</strong>');
+                res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2 mb-1">$1</strong>');
                 res = res.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
-                state.aiResult = `<div class="text-left">${res}</div>`;
+                state.aiResult = `<div class="text-left space-y-1">${res}</div>`;
             } else {
                 state.aiResult = `<span class="text-red-400">Hata: Model cevap üretmedi.</span>`;
             }
@@ -179,60 +322,31 @@ GÖREVİN:
         state.aiLoading = false; render();
     }
 
-    function renderModal() {
-        if (!state.showModal) return "";
-        return `<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/90 backdrop-blur-md animate-fade-in"><div class="bg-slate-800 border border-slate-700 rounded-[2.5rem] p-7 w-full max-w-sm shadow-2xl relative"><h3 class="font-bold text-white text-lg mb-4 flex items-center gap-2"><i class="ph-fill ph-robot text-red-500"></i> AI Raporu</h3><div class="text-xs leading-relaxed text-slate-200 bg-slate-900/50 p-5 rounded-2xl max-h-80 overflow-y-auto mb-6 border border-white/5 shadow-inner">${state.aiLoading ? '<div class="flex flex-col items-center gap-4 py-8"><div class="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div><p class="animate-pulse">Görsel, Profil ve Yorumlar İşleniyor...</p></div>' : state.aiResult}</div>${!state.aiLoading ? `<button data-action="close-modal" class="w-full py-4 bg-white text-slate-900 rounded-2xl font-bold text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all">Kapat</button>` : ''}</div></div>`;
-    }
-
-    function render() {
-        app.innerHTML = (state.tab === "giris" ? renderGiris() : renderAnaliz()) + renderModal();
-        if (state.cameraActive && state.tab === "analiz") startVideo();
-    }
-
-    async function startVideo() {
-        const v = document.getElementById("cameraVideo");
-        if (v && !window.stream) {
-            try { 
-                window.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); 
-                v.srcObject = window.stream; 
-            } catch (e) { 
-                alert("Kamera açılamadı."); 
-                state.cameraActive = false; 
-                render(); 
-            }
-        }
-    }
-
     app.addEventListener("click", e => {
         const btn = e.target.closest("[data-action]"); if (!btn) return;
         const act = btn.dataset.action;
-        if (act === "reset-key") { 
-            localStorage.removeItem("gemini_api_key"); 
-            GEMINI_API_KEY = ""; 
-            render(); 
-        }
+        
+        if (act === "reset-key") { localStorage.removeItem("gemini_api_key"); GEMINI_API_KEY = ""; render(); }
+        if (act === "tab") { state.tab = btn.dataset.id; render(); }
+        if (act === "open-fullscreen") { state.fullscreenImgSrc = btn.dataset.src; render(); }
+        if (act === "close-fullscreen") { state.fullscreenImgSrc = null; render(); }
+        if (act === "add-new-comment") addNewComment();
+
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
             const profile = document.getElementById("userProfileInput").value;
             const key = document.getElementById("apiKeyInput")?.value;
             if (name.length < 2) return alert("Lütfen isminizi girin.");
-            if (key) { 
-                GEMINI_API_KEY = key; 
-                localStorage.setItem("gemini_api_key", key); 
-            }
+            if (key) { GEMINI_API_KEY = key; localStorage.setItem("gemini_api_key", key); }
             if (!GEMINI_API_KEY) return alert("Gemini API Key gerekli!");
-            localStorage.setItem("userName", name);
-            localStorage.setItem("userProfile", profile);
-            state.userName = name; 
-            state.userProfile = profile; 
-            state.tab = "analiz"; 
-            render();
+            localStorage.setItem("userName", name); localStorage.setItem("userProfile", profile);
+            state.userName = name; state.userProfile = profile; state.tab = "analiz"; render();
         }
+        
         if (act === "open-camera") { state.cameraActive = true; render(); }
         if (act === "stop-camera") { 
             state.cameraActive = false; 
-            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); 
-            window.stream = null; 
+            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); window.stream = null; 
             render(); 
         }
         if (act === "take-photo") {
@@ -242,8 +356,7 @@ GÖREVİN:
             canvas.getContext("2d").drawImage(video, 0, 0);
             state.imageSource = canvas.toDataURL("image/jpeg");
             state.cameraActive = false; 
-            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); 
-            window.stream = null; 
+            if(window.stream) window.stream.getTracks().forEach(t=>t.stop()); window.stream = null; 
             render();
         }
         if (act === "run-ai") runAI();
@@ -252,13 +365,19 @@ GÖREVİN:
 
     app.addEventListener("input", e => {
         if (e.target.id === "customQuestionInput") state.customQuestion = e.target.value;
+        if (e.target.id === "newCommentText") state.newCommentText = e.target.value; 
     });
 
     app.addEventListener("change", e => {
-        if (e.target.id === "locSelect") state.selectedLoc = e.target.value;
-        if (e.target.id === "galleryInput") {
+        if (e.target.name === "rating") state.newCommentRating = parseInt(e.target.value);
+        if (e.target.id === "locSelect" || e.target.id === "newLocSelect") state.selectedLoc = e.target.value;
+        if (e.target.id === "galleryInput" || e.target.id === "newCommentPhotoInput") {
             const reader = new FileReader();
-            reader.onload = ev => { state.imageSource = ev.target.result; render(); };
+            reader.onload = ev => { 
+                if (e.target.id === "galleryInput") state.imageSource = ev.target.result;
+                else state.newCommentPhoto = ev.target.result;
+                render(); 
+            };
             reader.readAsDataURL(e.target.files[0]);
         }
     });
