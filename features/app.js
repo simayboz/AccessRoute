@@ -18,13 +18,16 @@
     const IYTE_LOCATIONS = [
         { id: "lib", title: "Kütüphane" }, { id: "cafe", title: "Yemekhane Girişi" },
         { id: "chem", title: "Kimya Mühendisliği" }, { id: "kyk_kiz", title: "KYK Kız Yurdu" },
-        { id: "hazirlik", title: "Hazırlık Binası" }, { id: "opera_kafe", title: "Opera Kafe" }
+        { id: "kyk_erkek", title: "KYK Erkek Yurdu" }, { id: "hazirlik", title: "Hazırlık Binası" },
+        { id: "opera_kafe", title: "Opera Kafe" }, { id: "koy_yokusu", title: "Köy Yokuşu" },
+        { id: "muh_bilgisayar", title: "Bilgisayar Mühendisliği" }, { id: "muh_insaat", title: "İnşaat Mühendisliği" },
+        { id: "fak_fen", title: "Fen Fakültesi" }, { id: "fak_mimarlik", title: "Mimarlık Fakültesi" }
     ];
 
     const state = {
         tab: "giris", userName: STORED_USER_NAME, userProfile: STORED_USER_PROFILE,
         selectedLoc: "", imageSource: null, cameraActive: false, aiLoading: false, 
-        aiResult: "", showModal: false
+        aiResult: "", showModal: false, customQuestion: ""
     };
 
     const app = document.getElementById("app");
@@ -64,10 +67,12 @@
                     <option value="Belirtilmedi">Hareketlilik Tercihi</option>
                     <option value="Manuel Tekerlekli Sandalye">Manuel Tekerlekli Sandalye</option>
                     <option value="Akülü Tekerlekli Sandalye">Akülü Tekerlekli Sandalye</option>
+                    <option value="Koltuk Değneği veya Yürüteç">Koltuk Değneği / Yürüteç</option>
+                    <option value="Beyaz Baston (Görme Desteği)">Beyaz Baston / Görme Desteği</option>
                 </select>
-                ${!hasKey ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (AIza...)" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-blue-400 outline-none focus:border-blue-500">` : 
+                ${!hasKey ? `<input type="password" id="apiKeyInput" placeholder="Gemini API Key (AIza...)" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-5 px-6 text-emerald-400 outline-none focus:border-emerald-500">` : 
                 `<div class="bg-slate-900/50 py-4 px-5 rounded-2xl border border-slate-800 flex flex-col items-center gap-2">
-                    <span class="text-xs text-blue-400 font-medium">✅ Gemini AI Aktif</span>
+                    <span class="text-xs text-emerald-400 font-medium">✅ Gemini AI Aktif</span>
                     <button data-action="reset-key" class="text-[10px] text-rose-500 underline uppercase font-bold">Anahtarı Sıfırla</button>
                 </div>`}
                 <button data-action="submit-login" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-2xl font-bold text-white shadow-lg active:scale-95 transition-all text-lg mt-4">Uygulamaya Başla</button>
@@ -84,7 +89,7 @@
                 <option value="">Konum Seçin...</option>
                 ${IYTE_LOCATIONS.map(l => `<option value="${l.id}" ${state.selectedLoc === l.id ? 'selected' : ''}>${l.title}</option>`).join('')}
             </select>
-            <div class="relative w-full h-[400px] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-800 shadow-2xl">
+            <div class="relative w-full h-[350px] bg-slate-900 rounded-[2.5rem] overflow-hidden border border-slate-800 shadow-2xl">
                 ${state.cameraActive ? '<video id="cameraVideo" class="w-full h-full object-cover" autoplay playsinline muted></video>' : (state.imageSource ? `<img src="${state.imageSource}" class="w-full h-full object-cover">` : '<div class="flex flex-col items-center justify-center h-full text-slate-500 gap-3"><i class="ph ph-camera text-4xl"></i><span class="text-xs italic">Fotoğraf Bekleniyor</span></div>')}
                 ${state.cameraActive ? '<button data-action="take-photo" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white text-red-600 w-16 h-16 rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-all"><i class="ph-fill ph-camera text-2xl"></i></button>' : ''}
             </div>
@@ -92,6 +97,7 @@
                 <button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest">${state.cameraActive?'Kapat':'Kamera'}</button>
                 <label class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest text-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
             </div>
+            <input type="text" id="customQuestionInput" placeholder="Yapay zekaya soru sor... (Örn: Rampa var mı?)" value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
             <button data-action="run-ai" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm mt-2">✨ Analizi Başlat</button>
         </div>`;
     }
@@ -104,9 +110,9 @@
             const compressedImg = await resizeImage(state.imageSource, 800);
             const base64Data = compressedImg.split(',')[1];
             
-            const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (rampa, basamak vb.) raporla.`;
+            const questionText = state.customQuestion ? ` Ayrıca kullanıcının şu özel sorusuna da cevap ver: "${state.customQuestion}".` : "";
+            const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı Profili: ${state.userProfile}.${questionText} Fotoğraftaki engelleri (rampa, basamak vb.) raporla ve nazik tavsiyeler ver.`;
 
-            // İŞTE ÇÖZÜM: Kapanan 1.5 sürümü yerine güncel olan 2.5 modelini kullanıyoruz!
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const response = await fetch(url, {
@@ -174,6 +180,7 @@
         }
         if (act === "submit-login") {
             const name = document.getElementById("userNameInput").value;
+            const profile = document.getElementById("userProfileInput").value;
             const key = document.getElementById("apiKeyInput")?.value;
             if (name.length < 2) return alert("Lütfen isminizi girin.");
             if (key) { 
@@ -181,7 +188,12 @@
                 localStorage.setItem("gemini_api_key", key); 
             }
             if (!GEMINI_API_KEY) return alert("Gemini API Key gerekli!");
-            state.userName = name; state.tab = "analiz"; render();
+            localStorage.setItem("userName", name);
+            localStorage.setItem("userProfile", profile);
+            state.userName = name; 
+            state.userProfile = profile; 
+            state.tab = "analiz"; 
+            render();
         }
         if (act === "open-camera") { state.cameraActive = true; render(); }
         if (act === "stop-camera") { 
@@ -203,6 +215,10 @@
         }
         if (act === "run-ai") runAI();
         if (act === "close-modal") { state.showModal = false; render(); }
+    });
+
+    app.addEventListener("input", e => {
+        if (e.target.id === "customQuestionInput") state.customQuestion = e.target.value;
     });
 
     app.addEventListener("change", e => {
