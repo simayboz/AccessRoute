@@ -106,7 +106,8 @@
             
             const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (rampa, basamak vb.) raporla.`;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            // İŞTE ÇÖZÜM: Kapanan 1.5 sürümü yerine güncel olan 2.5 modelini kullanıyoruz!
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const response = await fetch(url, {
                 method: "POST",
@@ -115,7 +116,6 @@
                     contents: [{
                         parts: [
                             { text: prompt },
-                            // İŞTE BÜTÜN SORUN YARATAN YER BURASIYDI! Doğrusu camelCase:
                             { inlineData: { mimeType: "image/jpeg", data: base64Data } }
                         ]
                     }]
