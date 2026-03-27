@@ -106,8 +106,7 @@
             
             const prompt = `İYTE kampüsü erişilebilirlik analizisin. Konum: ${state.selectedLoc}. Kullanıcı: ${state.userProfile}. Fotoğraftaki engelleri (rampa, basamak vb.) raporla.`;
 
-            // GÜNCEL VE DOĞRU URL YAPISI (v1 sürümü ve gemini-1.5-flash)
-            const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
             const response = await fetch(url, {
                 method: "POST",
@@ -116,7 +115,8 @@
                     contents: [{
                         parts: [
                             { text: prompt },
-                            { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                            // İŞTE BÜTÜN SORUN YARATAN YER BURASIYDI! Doğrusu camelCase:
+                            { inlineData: { mimeType: "image/jpeg", data: base64Data } }
                         ]
                     }]
                 })
@@ -124,15 +124,15 @@
 
             const data = await response.json();
             
-            if (data.error) {
-                state.aiResult = `<span class="text-red-400">Hata: ${data.error.message}</span>`;
-            } else if (!data.candidates || data.candidates.length === 0) {
-                state.aiResult = `<span class="text-red-400">Hata: Yanıt alınamadı.</span>`;
-            } else {
+            if (!response.ok) {
+                state.aiResult = `<span class="text-red-400">API Hatası: ${data.error?.message || 'Bilinmeyen hata'}</span>`;
+            } else if (data.candidates && data.candidates.length > 0) {
                 let res = data.candidates[0].content.parts[0].text;
                 res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2">$1</strong>');
                 res = res.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
                 state.aiResult = `<div class="text-left">${res}</div>`;
+            } else {
+                state.aiResult = `<span class="text-red-400">Hata: Model cevap üretmedi.</span>`;
             }
         } catch (e) { 
             state.aiResult = `<span class="text-red-400">Sistem hatası: ${e.message}</span>`; 
