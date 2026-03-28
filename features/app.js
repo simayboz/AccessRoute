@@ -25,8 +25,11 @@
     ];
 
     const STATIC_COMMENTS = [
-        { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 2, text: "Yokuş çok dik, kışın ıslakken tekerlekler kayıyor.", date: "15 Mar 2026" },
-        { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kampüsün en erişilebilir binası kesinlikle burası.", date: "16 Mar 2026" }
+        { locId: "chem", user: "Zülal", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 3, text: "Laboratuvar girişindeki rampa iyi ama koridor kapıları çok ağır. Tek başıma açarken zorlanıyorum.", date: "26 Mar 2026" },
+        { locId: "lib", user: "Elif", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 5, text: "Kampüsün tartışmasız en erişilebilir binası. Asansörler geniş ve otomatik kapılar sorunsuz çalışıyor.", date: "27 Mar 2026" },
+        { locId: "fak_fen", user: "Burak", profile: "Akülü Tekerlekli Sandalye", photo: "", rating: 2, text: "⚠️ DİKKAT: MBG çevresindeki inşaattan dolayı buradaki rampalar 21-28 Mar günleri kapalı. Mimarlık'tan ringe binin.", date: "20 Mar 2026" },
+        { locId: "cafe", user: "Mert", profile: "Manuel Tekerlekli Sandalye", photo: "", rating: 4, text: "Girişteki rampa güzel fakat öğle arası turnikeler çok dar kalıyor. Güvenlikten kenar kapıyı açmasını istemek gerekiyor.", date: "28 Mar 2026" },
+        { locId: "koy_yokusu", user: "Betül", profile: "Koltuk Değneği veya Yürüteç", rating: 2, photo: "", text: "Zemin maalesef çok bozuk. Özellikle yağmurlu günlerde koltuk değneğiyle inmek tehlikeli olabiliyor.", date: "25 Mar 2026" }
     ];
 
     const state = {
@@ -122,7 +125,7 @@
                 <button data-action="${state.cameraActive?'stop-camera':'open-camera'}" class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest">${state.cameraActive?'Kapat':'Kamera'}</button>
                 <label class="glass rounded-2xl py-4 text-[10px] font-bold uppercase tracking-widest text-center cursor-pointer">Galeri<input type="file" accept="image/*" class="hidden" id="galleryInput"></label>
             </div>
-            <input type="text" id="customQuestionInput" placeholder="Yapay zekaya soru sor..." value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
+            <input type="text" id="customQuestionInput" placeholder="Yapay zekaya özel soru sor..." value="${state.customQuestion}" class="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-red-600 shadow-inner">
             <button data-action="run-ai" class="w-full bg-red-600 hover:bg-red-700 py-5 rounded-[2rem] font-bold shadow-xl active:scale-95 transition-all uppercase tracking-widest text-sm mt-2">✨ Analizi Başlat</button>
         </div>`;
     }
@@ -273,19 +276,32 @@
             const locComments = state.comments.filter(c => c.locId === state.selectedLoc);
             let commentsText = "";
             if (locComments.length > 0) {
-                commentsText = `\nTopluluk Yorumları: Bu konum hakkında diğer öğrencilerin deneyimleri şunlardır: ` + locComments.map(c => `"${c.text}"`).join(" | ");
+                commentsText = `\nTopluluk Yorumları: ` + locComments.map(c => `"${c.text}"`).join(" | ");
             }
 
             const questionText = state.customQuestion ? `\nKullanıcının Özel Sorusu: "${state.customQuestion}"` : "";
             
-            const prompt = `Sen İYTE kampüsü erişilebilirlik uzmanısın. 
-Konum: ${locTitle}. 
-Kullanıcının Hareketlilik Profili: ${state.userProfile}.${commentsText}${questionText} 
+            // YEPYENİ YAPILANDIRILMIŞ PROMPT
+            const prompt = `Sen İYTE kampüsü için profesyonel ve empatik bir erişilebilirlik asistanısın.
+Kullanıcı Adı: ${state.userName}
+Konum: ${locTitle} 
+Profil: ${state.userProfile}.${commentsText}${questionText} 
 
-GÖREVİN: 
-1. Fotoğraftaki fiziksel engelleri (rampa, basamak vb.) analiz et.
-2. ÖNEMLİ: Analizini ve tavsiyelerini KESİNLİKLE kullanıcının "${state.userProfile}" profilini ve yukarıdaki topluluk yorumlarını göz önünde bulundurarak yap.
-3. Kullanıcının özel sorusu varsa mutlaka yanıtla. Kısa, net ve nazik bir rapor ver.`;
+GÖREVİN (Aşağıdaki yapıyı ve emojileri KESİNLİKLE kullanarak yanıt ver):
+
+👋 **Merhaba ${state.userName},**
+(Buraya samimi bir giriş ve fotoğrafın genel durumu hakkında 1-2 cümle yaz)
+
+🔍 **Fiziksel Analiz:**
+(Fotoğraftaki eğim, zemin, korkuluk, basamak gibi detayları 2-3 madde ile profesyonelce incele)
+
+💬 **Kampüsün Sesi:**
+(Eğer topluluk yorumları verilmişse, onları tek tek saymadan genel bir özet çıkararak yaz. "Öğrenciler genel olarak..." gibi.)
+
+🎯 **Sana Özel Tavsiyem:**
+(Kullanıcının "${state.userProfile}" profiline KESİN OLARAK uygun, net bir güvenlik veya rahatlık tavsiyesi ver.)
+
+${state.customQuestion ? `❓ **Sorunun Yanıtı:**\n(Kullanıcının sorduğu "${state.customQuestion}" sorusunu doğrudan yanıtla.)` : ''}`;
 
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
@@ -308,9 +324,10 @@ GÖREVİN:
                 state.aiResult = `<span class="text-red-400">API Hatası: ${data.error?.message || 'Bilinmeyen hata'}</span>`;
             } else if (data.candidates && data.candidates.length > 0) {
                 let res = data.candidates[0].content.parts[0].text;
-                res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-2 mb-1">$1</strong>');
+                // Kalın yazıları ve listeleri stilize et
+                res = res.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white block mt-3 mb-1">$1</strong>');
                 res = res.replace(/\* (.*?)/g, '<li class="ml-4 list-disc text-slate-300 py-0.5">$1</li>');
-                state.aiResult = `<div class="text-left space-y-1">${res}</div>`;
+                state.aiResult = `<div class="text-left space-y-2">${res}</div>`;
             } else {
                 state.aiResult = `<span class="text-red-400">Hata: Model cevap üretmedi.</span>`;
             }
