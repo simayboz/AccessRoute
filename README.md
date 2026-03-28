@@ -28,7 +28,7 @@ AccessRoute bir haritadan çok daha fazlası; o, kampüsteki her yolu herkes iç
 ---
 
 ## 💡 Problem
-İYTE gibi geniş ve engebeli bir kampüste, statik haritalar hareket kısıtlılığı olan öğrenciler için yeterli güvenlik bilgisi sunmamaktadır. Bir rampanın varlığı haritada görünse de; o anki zemin durumu (ıslak mermerin kayganlığı, yaprak birikintisi), anlık başlayan bir inşaat veya bozulan bir asansör gibi **"dinamik engeller"** ancak yerinde görülebilen ve ciddi mağduriyet yaratan faktörlerdir. Bu belirsizlik, eğitimde büyük bir fırsat eşitsizliği yaratır.
+İYTE gibi geniş ve engebeli bir kampüste, statik haritalar hareket kısıtlılığı olan öğrenciler için yeterli güvenlik bilgisi sunmamaktadır. Klasik navigasyon uygulamaları bir yol tarifini verse de; tekerlekli sandalye veya koltuk değneği kullanan bir öğrenci için hayati önem taşıyan merdivenlerin nerede olduğunu, bir rampanın eğimini, o anki zemin durumunu (ıslak mermerin kayganlığı, yaprak birikintisi), anlık başlayan bir inşaat veya bozulan bir asansör gibi "dinamik engelleri" gösteremez. Bu engeller ancak yerinde görülebilen ve ciddi mağduriyet yaratan faktörlerdir. Bu belirsizlik, eğitimde büyük bir fırsat eşitsizliği yaratır.
 
 ## 🎯 Çözüm & 🤖 AI'ın Rolü
 AccessRoute, kampüs navigasyonunu basit bir yol tarifinden çıkarıp, yapay zeka destekli bir **"bilişsel karar destek mekanizmasına"** dönüştürür. Projenin kalbinde yer alan **Gemini 2.5 Flash**, şu üç temel katmanda analiz yaparak kullanıcıyı korur:
