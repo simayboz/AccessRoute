@@ -7,7 +7,6 @@ GÜniversite kampüsleri, özellikle de İYTE gibi eğimli araziye sahip yerler,
 Uygulama, kampüsü bir "mikrokozmos" olarak ele alır ve şu profillere özel çözüm sunar:
 * **Tekerlekli Sandalye Kullanıcıları:** Eğim ($m = \tan(\theta)$) ve zemin çekiş gücü analizi.
 * **Koltuk Değneği / Yürüteç Kullananlar:** Kayganlık ve kapı ağırlığı odaklı geri bildirim.
-* **Beyaz Baston (Görme Desteği) İhtiyacı Olanlar:** Hissedilebilir yüzey sürekliliği takibi.
 * **Destekçi Topluluk:** "Kaldırım Rampası Etkisi" (Curb Cut Effect) sayesinde bebek arabalı velilerden ağır yük taşıyan personele kadar tüm kampüse fayda sağlayan veri gönüllüleri.
 
 ## 🤖 AI'ın Rolü: Multimodal Analiz, Kolektif Hafıza ve İnteraktif Karar Desteği

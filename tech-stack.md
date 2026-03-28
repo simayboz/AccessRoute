@@ -26,5 +26,5 @@ Proje geliştirme sürecinde, "En Basit ve En Etkili" felsefesini koruyarak, uyg
 ---
 
 ## 🚀 Barındırma ve Güvenlik
-* **Deployment:** Proje, **GitHub Pages** üzerinden statik bir web uygulaması olarak sunulmaktadır (Sıfır sunucu maliyeti ve yüksek uptime).
+* **Deployment:** Proje, CI/CD süreçleriyle doğrudan GitHub'a bağlanarak **Vercel** üzerinden statik bir web uygulaması olarak saniyeler içinde canlıya alınmıştır (Sıfır sunucu maliyeti, yüksek performans ve anlık güncelleme).
 * **Veri Yönetimi:** Kullanıcı tercihleri ve profilleri `LocalStorage` üzerinde güvenli bir şekilde tutulurken, Firestore güvenlik kuralları (Security Rules) ile "sadece kendi yorumunu silme" özelliği aktiftir.
