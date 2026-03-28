@@ -1,7 +1,7 @@
 # 🚀 AccessRoute - İYTE Engelsiz Kampüs Asistanı ♿
 
 > **🔗 Uygulama Linki:** [AccessRoute Canlı İzle](https://simayboz.github.io/AccessRoute/) 
-> **📺 Demo Videosu:** [Proje Tanıtım ve Kullanım Videosu]([BURAYA_VIDEO_LINKINI_YAPISTIR])
+> **📺 Demo Videosu:** [Proje Tanıtım ve Kullanım Videosu](https://youtu.be/54USnNLUhws)
 
 **"Görünmez engelleri görünür kılan, topluluk hafızasıyla güçlendirilmiş yapay zeka asistanı."**
 
@@ -23,6 +23,7 @@ AccessRoute bir haritadan çok daha fazlası; o, kampüsteki her yolu herkes iç
   <img src="analiz.png" width="250" alt="Yapay Zeka Analizi">
   &nbsp;&nbsp;&nbsp;
   <img src="topluluk.png" width="250" alt="Kampüs Sesi Topluluk">
+ <img src="AIraporu.png" width="250" alt="Kampüs Sesi Topluluk">
 </div>
 ---
 
