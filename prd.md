@@ -7,8 +7,7 @@
 Uygulama, kampüste hareket etmek için farklı araçlar kullanan bireyleri tanır ve onlara özel tavsiyeler üretir:
 * **Manuel veya Akülü Tekerlekli Sandalye** kullanıcıları.
 * **Koltuk değneği veya yürüteç** kullananlar.
-* **Beyaz baston** kullanan (görme desteği ihtiyacı olan) öğrenciler.
-* Kampüsün erişilebilirliğine katkı sunmak isteyen **destekçi gönüllüler**.
+* Kampüsün erişilebilirliğine katkı sunmak isteyen ve fiziksel engelleri raporlayan **destekçi gönüllüler**.
 
 ## 3. Temel Özellikler
 
@@ -17,7 +16,7 @@ Kullanıcı giriş yaptığında adını ve hareketlilik tercihini seçer. Uygul
 
 ### 3.2. Çok Katmanlı AI Analiz Sistemi (AI + Kolektif Hafıza)
 Yapay Zeka (Gemini 2.5 Flash), multimodal mimarisi sayesinde şu analizleri eş zamanlı gerçekleştirir:
-* **Görsel Segmentasyon ve Eğim Analizi:** Fotoğraftaki perspektif üzerinden eğim açısını ($m = \tan(\theta)$) ve zemin dokusunu (mermer, çakıl, asfalt vb.) analiz eder.
+* **Görsel Segmentasyon ve Fiziksel Analiz:** Fotoğraftaki eğim durumunu, basamak engellerini ve zemin dokusunu (mermer, çakıl, asfalt vb.) genel bağlamda analiz eder.
 * **Deneyim Sentezi:** Firebase'deki topluluk yorumlarını tarayarak görsel veriyi geçmiş deneyimlerle (örn: "ıslakken kaygan") harmanlar.
 * **İnteraktif NLP (Soru-Cevap):** Kullanıcının sorduğu "Manuel sandalyemle buradan geçebilir miyim?" gibi doğal dil sorularına, görsel ve profil verilerini birleştirerek kişiselleştirilmiş yanıtlar üretir.
 * **Risk Skorlaması:** Tüm verileri sentezleyerek kullanıcıya düşük, orta veya yüksek risk seviyesi bildirir.
