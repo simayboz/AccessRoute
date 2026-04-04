@@ -1,6 +1,6 @@
 # 🚀 AccessRoute - İYTE Engelsiz Kampüs Asistanı ♿
 
-> **🔗 Uygulama Linki:** [AccessRoute Canlı İzle](https://simayboz.github.io/AccessRoute/) 
+> **🔗 Uygulama Linki:** [AccessRoute Canlı İzle](https://access-route.vercel.app)
 > **📺 Demo Videosu:** [Proje Tanıtım ve Kullanım Videosu](https://youtu.be/54USnNLUhws)
 
 **"Görünmez engelleri görünür kılan, topluluk hafızasıyla güçlendirilmiş yapay zeka asistanı."**
